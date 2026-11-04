@@ -15,7 +15,7 @@ See what your Pathfinder 2e gear does. Compare runes side by side and add item a
 ## Opening it
 
 - Token controls: the gem button.
-- Character sheet header: **Attune** (jumps to that character).
+- Character sheet header: **Attune** (jumps to that character). With **Triad** 0.8.0+ installed, this button moves into the Triad tray's utility bar instead (gem icon, next to the sheet button) and leaves the sheet.
 - Character sheet inventory: a small icon next to items with runes or activations (red when there is something new to add).
 - Keybinding: `Shift + R` (configurable).
 

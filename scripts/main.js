@@ -53,6 +53,23 @@ Hooks.once("ready", () => {
 
 /* ---------- Entry points ---------- */
 
+// Triad installed: Attune's button lives in the tray's utility bar, for the character on display,
+// and leaves the character sheet header. Older Triad versions without registerTool keep the sheet button.
+Hooks.on("triad.ready", (api) => {
+  if (typeof api?.registerTool !== "function") return;
+  api.registerTool({
+    id: MODULE_ID,
+    label: "ATTUNE.Open",
+    icon: ICON,
+    order: 10,
+    visible: (actor) => actor?.type === "character",
+    onClick: (actor) => openAttune({ actorId: actor.id })
+  });
+});
+
+/** True once Triad hosts the button, so the sheet does not show a second one. */
+const inTriad = () => game.triad?.api?.hasTool?.(MODULE_ID) === true;
+
 // Token controls (left toolbar)
 Hooks.on("getSceneControlButtons", (controls) => {
   const title = game.i18n.localize("ATTUNE.Open");
@@ -76,7 +93,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
 
 // Character sheet header (AppV1 PF2e sheet)
 Hooks.on("getActorSheetHeaderButtons", (sheet, buttons) => {
-  if (sheet.actor?.type !== "character") return;
+  if (sheet.actor?.type !== "character" || inTriad()) return;
   buttons.unshift({
     label: game.i18n.localize("ATTUNE.Button"),
     class: "attune-open-sheet",
@@ -87,7 +104,7 @@ Hooks.on("getActorSheetHeaderButtons", (sheet, buttons) => {
 
 // Character sheet header (ApplicationV2 sheets, if PF2e migrates)
 Hooks.on("getHeaderControlsActorSheetV2", (app, controls) => {
-  if (app.document?.type !== "character") return;
+  if (app.document?.type !== "character" || inTriad()) return;
   controls.push({
     icon: ICON,
     label: "ATTUNE.Button",
