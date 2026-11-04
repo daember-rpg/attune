@@ -12,6 +12,13 @@
         </button>
         {{/each}}
       </nav>
+      {{#if hasParty}}
+      <button type="button" class="at-party-toggle {{#if showParty}}is-on{{/if}}" data-action="toggleParty">
+        <i class="fa-solid {{#if showParty}}fa-users{{else}}fa-user{{/if}}"></i>
+        <span>{{partyLabel}}</span>
+        <i class="fa-solid {{#if showParty}}fa-toggle-on{{else}}fa-toggle-off{{/if}} at-party-switch"></i>
+      </button>
+      {{/if}}
     </div>
 
     <div class="at-rail-list">
@@ -208,7 +215,8 @@
             <div class="at-cmp-head">
               <img src="{{img}}" alt="">
               <div class="at-cmp-head-text">
-                <strong data-action="select" data-key="{{key}}">{{name}}</strong>
+                <strong data-action="select" data-key="{{key}}" data-reveal="true">{{name}}</strong>
+                <small class="at-cmp-owner">{{ownerName}}</small>
                 <small>{{summary}}</small>
               </div>
               <button type="button" class="at-x" data-action="toggleCompare" data-key="{{key}}" aria-label="{{@root.labels.removeCompare}}"><i class="fa-solid fa-xmark"></i></button>

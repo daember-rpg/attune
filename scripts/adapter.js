@@ -18,20 +18,21 @@ export function collectOwners() {
     party = members.filter((a) => a?.type === "character" && !ownIds.has(a.id) && a.testUserPermission(user, "LIMITED"));
   }
 
-  const toOwner = (actor, isOwn) => {
+  const toOwner = (actor, isOwn, isParty = false) => {
     const granted = grantedFor(actor);
     return {
       id: actor.id,
       name: actor.name,
       img: actor.img,
       isOwn,
+      isParty,
       items: actor.items.map((i) => normalizeItem(i, actor, granted)).filter(Boolean)
     };
   };
 
   return [
     ...own.sort(byName).map((a) => toOwner(a, !user.isGM)),
-    ...party.sort(byName).map((a) => toOwner(a, false))
+    ...party.sort(byName).map((a) => toOwner(a, false, true))
   ];
 }
 

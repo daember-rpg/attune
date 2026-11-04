@@ -94,7 +94,9 @@ export function initialState() {
     descriptions: {},
     diffOnly: false,
     focusActor: null,
-    focusItem: null
+    focusItem: null,
+    showParty: false,
+    reveal: false
   };
 }
 
@@ -428,15 +430,23 @@ export function buildView({ owners, state, L, catalog }) {
   const counts = { all: 0, weapon: 0, armor: 0, shield: 0, gear: 0 };
   const sorted = [];
 
+  const countable = (o) => !o.isParty || state.showParty;
   for (const o of owners) {
     const views = (o.items ?? []).map((it) => itemView(it, L, catalog, state)).sort(sortItems);
     for (const v of views) {
+      v.isParty = !!o.isParty;
       all.set(v.key, v);
+      if (!countable(o)) continue;
       counts.all += 1;
       counts[v.category] = (counts[v.category] ?? 0) + 1;
     }
     sorted.push({ ...o, items: views });
   }
+
+  // Opening a party member's item on purpose (from the sheet badge or the compare table) reveals the party.
+  const wanted = all.get(state.focusItem) ?? (state.reveal ? all.get(state.selectedKey) : null);
+  if (wanted?.isParty) state.showParty = true;
+  state.reveal = false;
 
   if (state.focusItem && all.has(state.focusItem)) {
     state.filter = "all";
@@ -457,7 +467,9 @@ export function buildView({ owners, state, L, catalog }) {
     state.focusActor = null;
   }
 
+  const hasParty = sorted.some((o) => o.isParty && o.items.length);
   const ownersOut = sorted
+    .filter((o) => !o.isParty || state.showParty)
     .map((o) => ({ ...o, items: o.items.filter((v) => state.filter === "all" || v.category === state.filter) }))
     .filter((o) => o.items.length);
 
@@ -485,6 +497,9 @@ export function buildView({ owners, state, L, catalog }) {
     owners: ownersOut,
     filters,
     hasAny: counts.all > 0,
+    hasParty,
+    showParty: !!state.showParty,
+    partyLabel: state.showParty ? L.hideParty : L.showParty,
     selected: all.get(state.selectedKey) ?? null,
     isDetail: state.tab !== "compare",
     isCompare: state.tab === "compare",

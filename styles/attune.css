@@ -554,6 +554,25 @@
 .attune .at-pane::-webkit-scrollbar-thumb { background: var(--at-char-4); border-radius: 8px; }
 
 
+/* ============ Party toggle ============ */
+.attune .at-root .at-party-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px dashed var(--at-line-2);
+  color: var(--at-parch-3);
+  font-size: 13px;
+}
+.attune .at-root .at-party-toggle span { flex: 1; }
+.attune .at-root .at-party-toggle:hover { color: var(--at-parch-2); border-color: var(--at-clay); }
+.attune .at-root .at-party-toggle.is-on { border-style: solid; color: var(--at-parch-2); }
+.attune .at-party-switch { font-size: 16px; }
+.attune .at-party-toggle.is-on .at-party-switch { color: var(--at-clay); }
+.attune .at-cmp-owner { color: var(--at-clay) !important; font-family: var(--at-head); font-size: 10px !important; letter-spacing: 0.1em; text-transform: uppercase; }
+
 /* ============ Activations ============ */
 .attune .at-hero-actions { flex-wrap: wrap; justify-content: flex-end; max-width: 300px; }
 .attune .at-root .at-btn.is-primary { background: var(--at-clay); border-color: var(--at-clay); color: var(--at-char); }

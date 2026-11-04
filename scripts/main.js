@@ -16,6 +16,13 @@ Hooks.once("init", () => {
     onChange: () => refreshAttune()
   });
 
+  game.settings.register(MODULE_ID, "partyVisible", {
+    scope: "client",
+    config: false,
+    type: Boolean,
+    default: false
+  });
+
   game.settings.register(MODULE_ID, "sheetBadges", {
     name: "ATTUNE.Settings.SheetBadges.Name",
     hint: "ATTUNE.Settings.SheetBadges.Hint",

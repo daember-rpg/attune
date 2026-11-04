@@ -7,8 +7,8 @@
     "KeybindHint": "Open or close the Attune window.",
     "Settings": {
       "ShowParty": {
-        "Name": "Show party members' gear",
-        "Hint": "Players can browse and compare the runes of other party members, not only their own characters."
+        "Name": "Allow viewing party members' gear",
+        "Hint": "Players see only their own characters by default and can reveal the rest of the party with a toggle in the window. Turn this off to hide other characters' gear entirely."
       },
       "SheetBadges": {
         "Name": "Inventory badges",
@@ -132,7 +132,9 @@
       "addedNotice": "{name} added to {actor}'s actions.",
       "removedNotice": "{name} removed from {actor}'s actions.",
       "addedAllNotice": "{n} activation(s) added to {actor}'s actions.",
-      "grantError": "Could not update the character sheet. See the console for details."
+      "grantError": "Could not update the character sheet. See the console for details.",
+      "showParty": "Show party members",
+      "hideParty": "Showing party members"
     },
     "Badge": {
       "Pending": "{n} activation(s) not on your sheet yet — open in Attune",

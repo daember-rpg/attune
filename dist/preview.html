@@ -578,6 +578,25 @@ body {
 .attune .at-pane::-webkit-scrollbar-thumb { background: var(--at-char-4); border-radius: 8px; }
 
 
+/* ============ Party toggle ============ */
+.attune .at-root .at-party-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px dashed var(--at-line-2);
+  color: var(--at-parch-3);
+  font-size: 13px;
+}
+.attune .at-root .at-party-toggle span { flex: 1; }
+.attune .at-root .at-party-toggle:hover { color: var(--at-parch-2); border-color: var(--at-clay); }
+.attune .at-root .at-party-toggle.is-on { border-style: solid; color: var(--at-parch-2); }
+.attune .at-party-switch { font-size: 16px; }
+.attune .at-party-toggle.is-on .at-party-switch { color: var(--at-clay); }
+.attune .at-cmp-owner { color: var(--at-clay) !important; font-family: var(--at-head); font-size: 10px !important; letter-spacing: 0.1em; text-transform: uppercase; }
+
 /* ============ Activations ============ */
 .attune .at-hero-actions { flex-wrap: wrap; justify-content: flex-end; max-width: 300px; }
 .attune .at-root .at-btn.is-primary { background: var(--at-clay); border-color: var(--at-clay); color: var(--at-char); }
@@ -690,6 +709,13 @@ body {
         </button>
         {{/each}}
       </nav>
+      {{#if hasParty}}
+      <button type="button" class="at-party-toggle {{#if showParty}}is-on{{/if}}" data-action="toggleParty">
+        <i class="fa-solid {{#if showParty}}fa-users{{else}}fa-user{{/if}}"></i>
+        <span>{{partyLabel}}</span>
+        <i class="fa-solid {{#if showParty}}fa-toggle-on{{else}}fa-toggle-off{{/if}} at-party-switch"></i>
+      </button>
+      {{/if}}
     </div>
 
     <div class="at-rail-list">
@@ -886,7 +912,8 @@ body {
             <div class="at-cmp-head">
               <img src="{{img}}" alt="">
               <div class="at-cmp-head-text">
-                <strong data-action="select" data-key="{{key}}">{{name}}</strong>
+                <strong data-action="select" data-key="{{key}}" data-reveal="true">{{name}}</strong>
+                <small class="at-cmp-owner">{{ownerName}}</small>
                 <small>{{summary}}</small>
               </div>
               <button type="button" class="at-x" data-action="toggleCompare" data-key="{{key}}" aria-label="{{@root.labels.removeCompare}}"><i class="fa-solid fa-xmark"></i></button>
@@ -924,8 +951,8 @@ const LANG = {
     "KeybindHint": "Open or close the Attune window.",
     "Settings": {
       "ShowParty": {
-        "Name": "Show party members' gear",
-        "Hint": "Players can browse and compare the runes of other party members, not only their own characters."
+        "Name": "Allow viewing party members' gear",
+        "Hint": "Players see only their own characters by default and can reveal the rest of the party with a toggle in the window. Turn this off to hide other characters' gear entirely."
       },
       "SheetBadges": {
         "Name": "Inventory badges",
@@ -1049,7 +1076,9 @@ const LANG = {
       "addedNotice": "{name} added to {actor}'s actions.",
       "removedNotice": "{name} removed from {actor}'s actions.",
       "addedAllNotice": "{n} activation(s) added to {actor}'s actions.",
-      "grantError": "Could not update the character sheet. See the console for details."
+      "grantError": "Could not update the character sheet. See the console for details.",
+      "showParty": "Show party members",
+      "hideParty": "Showing party members"
     },
     "Badge": {
       "Pending": "{n} activation(s) not on your sheet yet — open in Attune",
@@ -1283,7 +1312,9 @@ function initialState() {
     descriptions: {},
     diffOnly: false,
     focusActor: null,
-    focusItem: null
+    focusItem: null,
+    showParty: false,
+    reveal: false
   };
 }
 
@@ -1617,15 +1648,23 @@ function buildView({ owners, state, L, catalog }) {
   const counts = { all: 0, weapon: 0, armor: 0, shield: 0, gear: 0 };
   const sorted = [];
 
+  const countable = (o) => !o.isParty || state.showParty;
   for (const o of owners) {
     const views = (o.items ?? []).map((it) => itemView(it, L, catalog, state)).sort(sortItems);
     for (const v of views) {
+      v.isParty = !!o.isParty;
       all.set(v.key, v);
+      if (!countable(o)) continue;
       counts.all += 1;
       counts[v.category] = (counts[v.category] ?? 0) + 1;
     }
     sorted.push({ ...o, items: views });
   }
+
+  // Opening a party member's item on purpose (from the sheet badge or the compare table) reveals the party.
+  const wanted = all.get(state.focusItem) ?? (state.reveal ? all.get(state.selectedKey) : null);
+  if (wanted?.isParty) state.showParty = true;
+  state.reveal = false;
 
   if (state.focusItem && all.has(state.focusItem)) {
     state.filter = "all";
@@ -1646,7 +1685,9 @@ function buildView({ owners, state, L, catalog }) {
     state.focusActor = null;
   }
 
+  const hasParty = sorted.some((o) => o.isParty && o.items.length);
   const ownersOut = sorted
+    .filter((o) => !o.isParty || state.showParty)
     .map((o) => ({ ...o, items: o.items.filter((v) => state.filter === "all" || v.category === state.filter) }))
     .filter((o) => o.items.length);
 
@@ -1674,6 +1715,9 @@ function buildView({ owners, state, L, catalog }) {
     owners: ownersOut,
     filters,
     hasAny: counts.all > 0,
+    hasParty,
+    showParty: !!state.showParty,
+    partyLabel: state.showParty ? L.hideParty : L.showParty,
     selected: all.get(state.selectedKey) ?? null,
     isDetail: state.tab !== "compare",
     isCompare: state.tab === "compare",
@@ -1767,7 +1811,7 @@ const OWNERS = [
     item({ key: "a1.i5", actorId: "a1", itemId: "i5", ownerName: "Seraphine Vale", name: "Cloak of Smoldering Ash", img: IMG.cloak, category: "gear", level: 9, price: "650 gp", carry: "equipped", invested: true, description: DESCRIPTIONS.cloak }),
     item({ key: "a1.i6", actorId: "a1", itemId: "i6", ownerName: "Seraphine Vale", name: "Bounding Boots", img: IMG.boots, category: "gear", level: 7, price: "340 gp", carry: "equipped", invested: false, description: DESCRIPTIONS.boots })
   ]},
-  { id: "a2", name: "Bram Ashguard", img: IMG.pc2, isOwn: false, items: [
+  { id: "a2", name: "Bram Ashguard", img: IMG.pc2, isOwn: false, isParty: true, items: [
     item({ key: "a2.i1", actorId: "a2", itemId: "i1", ownerName: "Bram Ashguard", canEdit: false, name: "Warhammer", img: IMG.hammer, category: "weapon", level: 11, price: "1,035 gp", carry: "equipped",
       runes: { potency: 1, striking: 1, property: ["holy"] }, base: { dice: 1, die: "d8", damageTypeLabel: "bludgeoning" } }),
     item({ key: "a2.i2", actorId: "a2", itemId: "i2", ownerName: "Bram Ashguard", canEdit: false, name: "Breastplate", img: IMG.breast, category: "armor", level: 14, price: "1,560 gp", carry: "equipped",
@@ -1776,7 +1820,7 @@ const OWNERS = [
       runes: { reinforcing: 3 }, base: { acBonus: 2, hardness: 10, maxHp: 80 } }),
     item({ key: "a2.i4", actorId: "a2", itemId: "i4", ownerName: "Bram Ashguard", canEdit: false, name: "Starlit Amulet", img: IMG.amulet, category: "gear", level: 6, price: "250 gp", carry: "equipped", invested: true, canEdit: false, description: DESCRIPTIONS.amulet })
   ]},
-  { id: "a3", name: "Nym", img: IMG.pc3, isOwn: false, items: [
+  { id: "a3", name: "Nym", img: IMG.pc3, isOwn: false, isParty: true, items: [
     item({ key: "a3.i1", actorId: "a3", itemId: "i1", ownerName: "Nym", canEdit: false, name: "Rapier", img: IMG.rapier, category: "weapon", level: 8, price: "625 gp", carry: "equipped",
       runes: { potency: 1, striking: 1, property: ["wounding", "corrosive"] }, base: { dice: 1, die: "d6", damageTypeLabel: "piercing" } }),
     item({ key: "a3.i2", actorId: "a3", itemId: "i2", ownerName: "Nym", canEdit: false, name: "Studded Leather", img: IMG.leather, category: "armor", level: 5, price: "160 gp", carry: "equipped",
@@ -1847,7 +1891,8 @@ function render() {
 }
 
 const actions = {
-  select: (t) => { state.selectedKey = t.dataset.key; state.expandedRune = null; state.tab = "detail"; },
+  select: (t) => { state.selectedKey = t.dataset.key; state.reveal = t.dataset.reveal === "true"; state.expandedRune = null; state.tab = "detail"; },
+  toggleParty: () => { state.showParty = !state.showParty; },
   toggleCompare: (t) => { if (toggleCompareKey(state, t.dataset.key) === "full") toast(fmt(L.compareFull, { max: COMPARE_MAX })); },
   clearCompare: () => { state.compareKeys = []; },
   setTab: (t) => { state.tab = t.dataset.tab; },

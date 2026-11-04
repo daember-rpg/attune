@@ -32,6 +32,7 @@ export class AttuneApp extends HandlebarsApplicationMixin(ApplicationV2) {
       toggleDiff: AttuneApp.#onToggleDiff,
       toggleActivation: AttuneApp.#onToggleActivation,
       addAll: AttuneApp.#onAddAll,
+      toggleParty: AttuneApp.#onToggleParty,
       openSheet: AttuneApp.#onOpenSheet
     }
   };
@@ -43,7 +44,7 @@ export class AttuneApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
   };
 
-  state = initialState();
+  state = Object.assign(initialState(), { showParty: !!game.settings.get(MODULE_ID, "partyVisible") });
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
@@ -57,11 +58,15 @@ export class AttuneApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   _onRender(context, options) {
     super._onRender?.(context, options);
+    if (this.state.showParty !== game.settings.get(MODULE_ID, "partyVisible")) {
+      game.settings.set(MODULE_ID, "partyVisible", this.state.showParty);
+    }
     bindSearch(this.element, this.state);
   }
 
   static #onSelect(event, target) {
     this.state.selectedKey = target.dataset.key;
+    this.state.reveal = target.dataset.reveal === "true";
     this.state.expandedRune = null;
     this.state.tab = "detail";
     this.render();
@@ -144,6 +149,11 @@ export class AttuneApp extends HandlebarsApplicationMixin(ApplicationV2) {
       if (await grantActivation(found.actor, found.item, act, L.grantedBy)) n += 1;
     }
     if (n) ui.notifications.info(fmt(L.addedAllNotice, { n, actor: found.actor.name }));
+    this.render();
+  }
+
+  static #onToggleParty() {
+    this.state.showParty = !this.state.showParty;
     this.render();
   }
 

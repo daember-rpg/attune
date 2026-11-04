@@ -41,7 +41,7 @@ const OWNERS = [
     item({ key: "a1.i5", actorId: "a1", itemId: "i5", ownerName: "Seraphine Vale", name: "Cloak of Smoldering Ash", img: IMG.cloak, category: "gear", level: 9, price: "650 gp", carry: "equipped", invested: true, description: DESCRIPTIONS.cloak }),
     item({ key: "a1.i6", actorId: "a1", itemId: "i6", ownerName: "Seraphine Vale", name: "Bounding Boots", img: IMG.boots, category: "gear", level: 7, price: "340 gp", carry: "equipped", invested: false, description: DESCRIPTIONS.boots })
   ]},
-  { id: "a2", name: "Bram Ashguard", img: IMG.pc2, isOwn: false, items: [
+  { id: "a2", name: "Bram Ashguard", img: IMG.pc2, isOwn: false, isParty: true, items: [
     item({ key: "a2.i1", actorId: "a2", itemId: "i1", ownerName: "Bram Ashguard", canEdit: false, name: "Warhammer", img: IMG.hammer, category: "weapon", level: 11, price: "1,035 gp", carry: "equipped",
       runes: { potency: 1, striking: 1, property: ["holy"] }, base: { dice: 1, die: "d8", damageTypeLabel: "bludgeoning" } }),
     item({ key: "a2.i2", actorId: "a2", itemId: "i2", ownerName: "Bram Ashguard", canEdit: false, name: "Breastplate", img: IMG.breast, category: "armor", level: 14, price: "1,560 gp", carry: "equipped",
@@ -50,7 +50,7 @@ const OWNERS = [
       runes: { reinforcing: 3 }, base: { acBonus: 2, hardness: 10, maxHp: 80 } }),
     item({ key: "a2.i4", actorId: "a2", itemId: "i4", ownerName: "Bram Ashguard", canEdit: false, name: "Starlit Amulet", img: IMG.amulet, category: "gear", level: 6, price: "250 gp", carry: "equipped", invested: true, canEdit: false, description: DESCRIPTIONS.amulet })
   ]},
-  { id: "a3", name: "Nym", img: IMG.pc3, isOwn: false, items: [
+  { id: "a3", name: "Nym", img: IMG.pc3, isOwn: false, isParty: true, items: [
     item({ key: "a3.i1", actorId: "a3", itemId: "i1", ownerName: "Nym", canEdit: false, name: "Rapier", img: IMG.rapier, category: "weapon", level: 8, price: "625 gp", carry: "equipped",
       runes: { potency: 1, striking: 1, property: ["wounding", "corrosive"] }, base: { dice: 1, die: "d6", damageTypeLabel: "piercing" } }),
     item({ key: "a3.i2", actorId: "a3", itemId: "i2", ownerName: "Nym", canEdit: false, name: "Studded Leather", img: IMG.leather, category: "armor", level: 5, price: "160 gp", carry: "equipped",
@@ -121,7 +121,8 @@ function render() {
 }
 
 const actions = {
-  select: (t) => { state.selectedKey = t.dataset.key; state.expandedRune = null; state.tab = "detail"; },
+  select: (t) => { state.selectedKey = t.dataset.key; state.reveal = t.dataset.reveal === "true"; state.expandedRune = null; state.tab = "detail"; },
+  toggleParty: () => { state.showParty = !state.showParty; },
   toggleCompare: (t) => { if (toggleCompareKey(state, t.dataset.key) === "full") toast(fmt(L.compareFull, { max: COMPARE_MAX })); },
   clearCompare: () => { state.compareKeys = []; },
   setTab: (t) => { state.tab = t.dataset.tab; },
