@@ -1,0 +1,237 @@
+<div class="at-root">
+  <aside class="at-rail">
+    <div class="at-rail-head">
+      <label class="at-search-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="search" class="at-search" placeholder="{{labels.search}}" autocomplete="off">
+      </label>
+      <nav class="at-filters">
+        {{#each filters}}
+        <button type="button" class="at-filter {{#if active}}is-active{{/if}}" data-action="setFilter" data-filter="{{id}}" data-tooltip="{{label}}" aria-label="{{label}}">
+          <i class="{{icon}}"></i><span>{{count}}</span>
+        </button>
+        {{/each}}
+      </nav>
+    </div>
+
+    <div class="at-rail-list">
+      {{#each owners}}
+      <section class="at-owner">
+        <header class="at-owner-head">
+          <img src="{{img}}" alt="">
+          <span class="at-owner-name">{{name}}</span>
+          {{#if isOwn}}<span class="at-tag">{{@root.labels.you}}</span>{{/if}}
+        </header>
+        {{#each items}}
+        <div class="at-item {{#if isSelected}}is-selected{{/if}} {{#if inCompare}}in-compare{{/if}}" data-action="select" data-key="{{key}}" data-search="{{searchText}}">
+          <img class="at-item-img" src="{{img}}" alt="">
+          <div class="at-item-text">
+            <span class="at-item-name">{{#if isEquipped}}<i class="fa-solid fa-hand at-eq" data-tooltip="{{@root.labels.equipped}}"></i>{{/if}}{{name}}</span>
+            <span class="at-item-sum {{#if hidden}}is-hidden{{/if}}">{{summary}}</span>
+          </div>
+          {{#if hasNew}}<span class="at-new" data-tooltip="{{@root.labels.addToSheet}}"></span>{{/if}}
+          <button type="button" class="at-cmp-toggle" data-action="toggleCompare" data-key="{{key}}"
+            data-tooltip="{{#if inCompare}}{{@root.labels.removeCompare}}{{else}}{{@root.labels.addCompare}}{{/if}}">
+            <i class="fa-solid {{#if inCompare}}fa-check{{else}}fa-plus{{/if}}"></i>
+          </button>
+        </div>
+        {{/each}}
+      </section>
+      {{else}}
+      <p class="at-empty">{{labels.noItems}}</p>
+      {{/each}}
+      <p class="at-empty at-search-empty" hidden>{{labels.noMatches}}</p>
+    </div>
+  </aside>
+
+  <main class="at-main">
+    <nav class="at-tabs">
+      <button type="button" class="at-tab {{#if isDetail}}is-active{{/if}}" data-action="setTab" data-tab="detail">
+        <i class="fa-solid fa-book-open"></i> {{labels.details}}
+      </button>
+      <button type="button" class="at-tab {{#if isCompare}}is-active{{/if}}" data-action="setTab" data-tab="compare">
+        <i class="fa-solid fa-scale-balanced"></i> {{labels.compare}}
+        <span class="at-count {{#if compareCount}}is-on{{/if}}">{{compareCount}}/{{compareMax}}</span>
+      </button>
+    </nav>
+
+    <div class="at-pane">
+      {{#if isDetail}}
+        {{#if selected}}
+        {{#with selected}}
+        <header class="at-hero">
+          <img class="at-hero-img" src="{{img}}" alt="">
+          <div class="at-hero-text">
+            <h2>{{name}}</h2>
+            <p class="at-meta">
+              <span><i class="{{categoryIcon}}"></i> {{categoryLabel}}</span>
+              <span>{{levelLabel}}</span>
+              {{#if price}}<span>{{price}}</span>{{/if}}
+              <span>{{ownerName}}</span>
+            </p>
+            <p class="at-chips">
+              {{#if carryLabel}}<span class="at-chip {{#if isEquipped}}is-moss{{/if}}">{{carryLabel}}</span>{{/if}}
+              {{#if isInvested}}<span class="at-chip is-moss">{{@root.labels.invested}}</span>{{/if}}
+              {{#if notInvested}}<span class="at-chip is-ember">{{@root.labels.notInvested}}</span>{{/if}}
+              {{#if hidden}}<span class="at-chip is-ember">{{@root.labels.unidentified}}</span>{{/if}}
+            </p>
+          </div>
+          <div class="at-hero-actions">
+            <button type="button" class="at-btn {{#if inCompare}}is-on{{/if}}" data-action="toggleCompare" data-key="{{key}}">
+              <i class="fa-solid fa-scale-balanced"></i>
+              {{#if inCompare}}{{@root.labels.removeCompare}}{{else}}{{@root.labels.addCompare}}{{/if}}
+            </button>
+            {{#if canOpen}}
+            <button type="button" class="at-btn at-btn-icon" data-action="openSheet" data-key="{{key}}" data-tooltip="{{@root.labels.openSheet}}" aria-label="{{@root.labels.openSheet}}">
+              <i class="fa-solid fa-up-right-from-square"></i>
+            </button>
+            {{/if}}
+          </div>
+        </header>
+
+        {{#if hidden}}
+        <p class="at-note"><i class="fa-solid fa-eye-slash"></i> {{@root.labels.unidentifiedNote}}</p>
+        {{else}}
+        {{#if stats.length}}
+        <div class="at-stats">
+          {{#each stats}}
+          <div class="at-stat">
+            <span class="at-stat-label">{{label}}</span>
+            <span class="at-stat-value">{{value}}</span>
+            {{#if sub}}<span class="at-stat-sub">{{sub}}</span>{{/if}}
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+
+        {{#if hasActivations}}
+        <h3 class="at-section">
+          {{@root.labels.activations}}
+          {{#if hasNew}}<span class="at-section-count">{{addable}}</span>{{/if}}
+          {{#if canAddAll}}<button type="button" class="at-btn at-btn-sm is-primary" data-action="addAll" data-key="{{key}}"><i class="fa-solid fa-plus"></i> {{@root.labels.addAll}}</button>{{/if}}
+        </h3>
+        {{#if investNote}}<p class="at-note is-warn"><i class="fa-solid fa-triangle-exclamation"></i> {{investNote}}</p>{{/if}}
+        <div class="at-runes">
+          {{#each activations}}
+          <div class="at-rune at-act is-present {{#if expanded}}is-open{{/if}} {{#if onSheet}}is-granted{{/if}} type-{{actionType}}">
+            <button type="button" class="at-rune-head" data-action="toggleRune" data-rune="{{descKey}}">
+              <span class="at-glyph at-glyph-act">{{glyph}}</span>
+              <span class="at-rune-name">
+                {{name}}
+                <small>{{typeLabel}}{{#if traitsText}} · {{traitsText}}{{/if}}</small>
+              </span>
+              {{#if frequency}}<span class="at-rune-lvl">{{frequency}}</span>{{/if}}
+              <i class="fa-solid fa-chevron-down at-caret"></i>
+            </button>
+            {{#unless expanded}}
+            {{#if trigger}}<p class="at-act-line"><strong>{{@root.labels.trigger}}</strong> {{trigger}}</p>{{/if}}
+            {{#if requirements}}<p class="at-act-line"><strong>{{@root.labels.requirements}}</strong> {{requirements}}</p>{{/if}}
+            {{/unless}}
+            {{#if expanded}}
+            <div class="at-rune-body">
+              {{#if descLoading}}<p class="at-muted"><i class="fa-solid fa-spinner fa-spin"></i> {{@root.labels.loading}}</p>
+              {{else if descMissing}}<p class="at-muted">{{@root.labels.noDesc}}</p>
+              {{else}}{{{descHtml}}}{{/if}}
+            </div>
+            {{/if}}
+            <div class="at-act-foot">
+              {{#if onSheet}}<span class="at-onsheet"><i class="fa-solid fa-circle-check"></i> {{@root.labels.onSheet}}</span>{{/if}}
+              {{#if canEdit}}
+                {{#if onSheet}}
+                <button type="button" class="at-btn at-btn-quiet" data-action="toggleActivation" data-key="{{itemKey}}" data-index="{{index}}" data-on="true">{{@root.labels.removeFromSheet}}</button>
+                {{else}}
+                <button type="button" class="at-btn is-primary" data-action="toggleActivation" data-key="{{itemKey}}" data-index="{{index}}" data-on="false"><i class="fa-solid fa-plus"></i> {{@root.labels.addToSheet}}</button>
+                {{/if}}
+              {{else}}
+                {{#unless onSheet}}<span class="at-muted at-small">{{@root.labels.readOnly}}</span>{{/unless}}
+              {{/if}}
+            </div>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+
+        {{#each runeGroups}}
+        <h3 class="at-section">{{title}}</h3>
+        <div class="at-runes">
+          {{#each runes}}
+          {{#if isSlot}}
+          <div class="at-rune is-slot">
+            <div class="at-rune-head">
+              <span class="at-glyph"><i class="fa-regular fa-circle"></i></span>
+              <span class="at-rune-name">{{@root.labels.emptySlot}}</span>
+            </div>
+          </div>
+          {{else}}
+          <div class="at-rune {{#if present}}is-present{{else}}is-absent{{/if}} {{#if inactive}}is-inactive{{/if}} {{#if expanded}}is-open{{/if}} {{#if isRare}}is-rare rarity-{{rarity}}{{/if}}">
+            <button type="button" class="at-rune-head" {{#if present}}data-action="toggleRune" data-rune="{{runeKey}}"{{else}}disabled{{/if}}>
+              <span class="at-glyph"><i class="{{icon}}"></i></span>
+              <span class="at-rune-name">
+                {{name}}
+                <small>{{kindLabel}}{{#if inactive}} · {{@root.labels.inactive}}{{/if}}</small>
+              </span>
+              {{#if effect}}<span class="at-rune-effect">{{effect}}</span>{{/if}}
+              {{#if level}}<span class="at-rune-lvl">{{level}}</span>{{/if}}
+              {{#if present}}<i class="fa-solid fa-chevron-down at-caret"></i>{{/if}}
+            </button>
+            {{#if expanded}}
+            <div class="at-rune-body">
+              {{#if descLoading}}<p class="at-muted"><i class="fa-solid fa-spinner fa-spin"></i> {{@root.labels.loading}}</p>
+              {{else if descMissing}}<p class="at-muted">{{@root.labels.noDesc}}</p>
+              {{else}}{{{descHtml}}}{{/if}}
+            </div>
+            {{/if}}
+          </div>
+          {{/if}}
+          {{/each}}
+        </div>
+        {{#if note}}<p class="at-note is-warn"><i class="fa-solid fa-triangle-exclamation"></i> {{note}}</p>{{/if}}
+        {{/each}}
+        {{/if}}
+        {{/with}}
+        {{else}}
+        <div class="at-blank"><i class="fa-solid fa-gem"></i><p>{{labels.noSelection}}</p></div>
+        {{/if}}
+
+      {{else}}
+        {{#if compareCount}}
+        <div class="at-cmp-bar">
+          <button type="button" class="at-btn {{#if diffOnly}}is-on{{/if}}" data-action="toggleDiff">
+            <i class="fa-solid {{#if diffOnly}}fa-square-check{{else}}fa-square{{/if}}"></i> {{labels.diffOnly}}
+          </button>
+          <button type="button" class="at-btn" data-action="clearCompare"><i class="fa-solid fa-broom"></i> {{labels.clearCompare}}</button>
+        </div>
+        <div class="at-cmp" style="--at-cols: {{compareCount}}">
+          <div class="at-cmp-row at-cmp-headrow">
+            <div class="at-cmp-label"></div>
+            {{#each compare}}
+            <div class="at-cmp-head">
+              <img src="{{img}}" alt="">
+              <div class="at-cmp-head-text">
+                <strong data-action="select" data-key="{{key}}">{{name}}</strong>
+                <small>{{summary}}</small>
+              </div>
+              <button type="button" class="at-x" data-action="toggleCompare" data-key="{{key}}" aria-label="{{@root.labels.removeCompare}}"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            {{/each}}
+          </div>
+          {{#each compareRows}}
+            {{#if section}}
+            <div class="at-cmp-section">{{section}}</div>
+            {{else}}
+            <div class="at-cmp-row {{#if diff}}is-diff{{/if}}">
+              <div class="at-cmp-label">{{label}}</div>
+              {{#each cells}}
+              <div class="at-cmp-cell {{#if best}}is-best{{/if}} {{#if na}}is-na{{/if}} {{#if has}}is-has{{/if}}">{{#if best}}<i class="fa-solid fa-caret-up"></i> {{/if}}{{text}}</div>
+              {{/each}}
+            </div>
+            {{/if}}
+          {{/each}}
+        </div>
+        {{else}}
+        <div class="at-blank"><i class="fa-solid fa-scale-balanced"></i><p>{{compareEmptyText}}</p></div>
+        {{/if}}
+      {{/if}}
+    </div>
+  </main>
+</div>

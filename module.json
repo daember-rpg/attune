@@ -1,0 +1,42 @@
+{
+  "id": "attune",
+  "title": "Attune",
+  "description": "See what your Pathfinder 2e gear does: compare runes side by side and add item activations and reactions straight to your character sheet.",
+  "version": "0.1.0",
+  "authors": [
+    {
+      "name": "Fernando"
+    }
+  ],
+  "compatibility": {
+    "minimum": "13",
+    "verified": "14"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "pf2e",
+        "type": "system",
+        "compatibility": {
+          "minimum": "7.0"
+        }
+      }
+    ]
+  },
+  "esmodules": [
+    "scripts/main.js"
+  ],
+  "styles": [
+    "styles/attune.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "url": "https://github.com/daember-rpg/attune",
+  "manifest": "https://raw.githubusercontent.com/daember-rpg/attune/main/module.json",
+  "download": "https://raw.githubusercontent.com/daember-rpg/attune/main/dist/module.zip"
+}

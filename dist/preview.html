@@ -1,0 +1,1896 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Attune Preview</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.7.8/handlebars.min.js"></script>
+<style>
+html, body { margin: 0; height: 100%; }
+body {
+  background: radial-gradient(1200px 700px at 30% 20%, #3a3f33, #1d211a 60%, #111310);
+  display: grid; place-items: center; font-family: "Spectral", serif;
+}
+.pv-window { width: min(940px, calc(100vw - 32px)); height: min(640px, calc(100vh - 64px)); display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
+.pv-window .window-header { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 12px; font-size: 14px; }
+.pv-window .window-header .title { flex: 1; }
+.pv-window .window-header .fa-xmark { opacity: .6; }
+.pv-window .window-content { flex: 1; min-height: 0; }
+#at-toast { position: fixed; top: 18px; left: 50%; transform: translate(-50%, -20px); opacity: 0; transition: .2s; background: #2c2621; color: #e8dcc4;
+  border: 1px solid #cf4a32; padding: 8px 16px; border-radius: 6px; font-family: "Spectral", serif; pointer-events: none; }
+#at-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+.pv-note { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; color: rgba(232,220,196,.4); font: italic 12px "Spectral", serif; }
+
+
+/* ============ Embermark tokens ============ */
+.attune {
+  --at-char: #1b1815;
+  --at-char-2: #221e1a;
+  --at-char-3: #2c2621;
+  --at-char-4: #3a322b;
+  --at-line: rgba(232, 220, 196, 0.10);
+  --at-line-2: rgba(232, 220, 196, 0.18);
+  --at-parch: #e8dcc4;
+  --at-parch-2: rgba(232, 220, 196, 0.72);
+  --at-parch-3: rgba(232, 220, 196, 0.45);
+  --at-clay: #b8673f;
+  --at-clay-soft: rgba(184, 103, 63, 0.16);
+  --at-moss: #8ea25f;
+  --at-moss-soft: rgba(142, 162, 95, 0.16);
+  --at-ember: #cf4a32;
+  --at-ember-soft: rgba(207, 74, 50, 0.16);
+  --at-head: "Cinzel", "Signika", serif;
+  --at-body: "Spectral", Georgia, serif;
+  --at-radius: 8px;
+}
+
+/* ============ Window shell ============ */
+.application.attune {
+  min-width: 640px;
+  min-height: 420px;
+  background: var(--at-char);
+  border: 1px solid var(--at-line-2);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+}
+.application.attune .window-header {
+  background: linear-gradient(180deg, #171411, #13110f);
+  border-bottom: 1px solid var(--at-line-2);
+  color: var(--at-parch);
+  font-family: var(--at-head);
+  letter-spacing: 0.08em;
+}
+.application.attune .window-header .window-icon { color: var(--at-clay); }
+.application.attune .window-content {
+  padding: 0;
+  background: var(--at-char);
+  color: var(--at-parch);
+  overflow: hidden;
+}
+
+/* Neutralize core button/input chrome inside the app */
+.attune .at-root button {
+  background: none;
+  border: none;
+  box-shadow: none;
+  margin: 0;
+  padding: 0;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  line-height: inherit;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: inherit;
+}
+.attune .at-root button:focus-visible { outline: 1px solid var(--at-clay); outline-offset: 2px; }
+.attune .at-root button:disabled { cursor: default; }
+.attune [hidden] { display: none !important; }
+
+.attune .at-root {
+  display: grid;
+  grid-template-columns: minmax(250px, 300px) 1fr;
+  height: 100%;
+  font-family: var(--at-body);
+  font-size: 14px;
+  color: var(--at-parch);
+}
+
+/* ============ Rail ============ */
+.attune .at-rail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--at-char-2);
+  border-right: 1px solid var(--at-line);
+}
+.attune .at-rail-head {
+  padding: 12px 12px 10px;
+  display: grid;
+  gap: 10px;
+  border-bottom: 1px solid var(--at-line);
+}
+.attune .at-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  height: 34px;
+  border: 1px solid var(--at-line-2);
+  border-radius: var(--at-radius);
+  background: var(--at-char);
+  color: var(--at-parch-3);
+}
+.attune .at-search-wrap:focus-within { border-color: var(--at-clay); color: var(--at-clay); }
+.attune .at-search {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  color: var(--at-parch);
+  font-family: var(--at-body);
+  font-size: 14px;
+  outline: none;
+}
+.attune .at-search::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+.attune .at-search::placeholder { color: var(--at-parch-3); font-style: italic; }
+.attune .at-filters { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.attune .at-root .at-filter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  border-radius: 6px;
+  color: var(--at-parch-3);
+  font-family: var(--at-head);
+  font-size: 12px;
+  transition: background 0.15s, color 0.15s;
+}
+.attune .at-root .at-filter:hover { background: var(--at-char-3); color: var(--at-parch-2); }
+.attune .at-root .at-filter.is-active { background: var(--at-clay-soft); color: var(--at-clay); box-shadow: inset 0 0 0 1px rgba(184, 103, 63, 0.35); }
+
+.attune .at-rail-list { flex: 1; min-height: 0; overflow-y: auto; padding: 6px 8px 14px; }
+.attune .at-owner + .at-owner { margin-top: 6px; }
+.attune .at-owner-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 6px 6px;
+  font-family: var(--at-head);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--at-parch-2);
+}
+.attune .at-owner-head img {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--at-line-2);
+}
+.attune .at-owner-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.attune .at-tag {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: var(--at-moss-soft);
+  color: var(--at-moss);
+  letter-spacing: 0.08em;
+}
+
+.attune .at-item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 38px 1fr 26px;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 6px 7px 8px;
+  border-radius: var(--at-radius);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.attune .at-item:hover { background: var(--at-char-3); }
+.attune .at-item.is-selected { background: var(--at-char-4); }
+.attune .at-item.is-selected::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--at-ember);
+}
+.attune .at-item-img {
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--at-char);
+  border: 1px solid var(--at-line);
+}
+.attune .at-item-text { min-width: 0; display: grid; gap: 1px; }
+.attune .at-item-name {
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.attune .at-eq { font-size: 10px; color: var(--at-moss); margin-right: 5px; vertical-align: 1px; }
+.attune .at-item-sum {
+  font-size: 12.5px;
+  color: var(--at-parch-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.attune .at-item-sum.is-hidden { font-style: italic; }
+.attune .at-root .at-cmp-toggle {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--at-parch-3);
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s, color 0.12s;
+}
+.attune .at-item:hover .at-cmp-toggle,
+.attune .at-item.is-selected .at-cmp-toggle { opacity: 1; }
+.attune .at-root .at-cmp-toggle:hover { background: var(--at-clay-soft); color: var(--at-clay); }
+.attune .at-item.in-compare .at-cmp-toggle { opacity: 1; background: var(--at-clay); color: var(--at-char); }
+.attune .at-empty { padding: 24px 12px; text-align: center; color: var(--at-parch-3); font-style: italic; }
+
+/* ============ Main ============ */
+.attune .at-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.attune .at-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 10px 18px 0;
+  border-bottom: 1px solid var(--at-line);
+}
+.attune .at-root .at-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 10px;
+  font-family: var(--at-head);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--at-parch-3);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.attune .at-root .at-tab:hover { color: var(--at-parch-2); }
+.attune .at-root .at-tab.is-active { color: var(--at-parch); border-bottom-color: var(--at-ember); }
+.attune .at-count {
+  font-family: var(--at-body);
+  font-size: 11px;
+  letter-spacing: 0;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: var(--at-char-3);
+  color: var(--at-parch-3);
+}
+.attune .at-count.is-on { background: var(--at-clay); color: var(--at-char); font-weight: 600; }
+
+.attune .at-pane { flex: 1; min-height: 0; overflow-y: auto; padding: 18px 22px 26px; }
+
+/* Hero */
+.attune .at-hero { display: grid; grid-template-columns: 72px 1fr auto; gap: 16px; align-items: center; }
+.attune .at-hero-img {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--at-char-2);
+  border: 1px solid var(--at-clay);
+  box-shadow: 0 0 0 4px var(--at-clay-soft);
+}
+.attune .at-hero-text { min-width: 0; }
+.attune .at-hero h2 {
+  margin: 0;
+  border: none;
+  font-family: var(--at-head);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--at-parch);
+  line-height: 1.2;
+}
+.attune .at-meta {
+  margin: 4px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  color: var(--at-parch-2);
+  font-size: 13px;
+}
+.attune .at-meta span + span::before { content: "·"; margin-right: 12px; color: var(--at-parch-3); }
+.attune .at-meta i { color: var(--at-clay); margin-right: 3px; }
+.attune .at-chips { margin: 8px 0 0; display: flex; gap: 6px; }
+.attune .at-chips:empty { display: none; }
+.attune .at-chip {
+  font-family: var(--at-head);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--at-line-2);
+  color: var(--at-parch-2);
+}
+.attune .at-chip.is-moss { border-color: rgba(142, 162, 95, 0.45); color: var(--at-moss); background: var(--at-moss-soft); }
+.attune .at-chip.is-ember { border-color: rgba(207, 74, 50, 0.45); color: var(--at-ember); background: var(--at-ember-soft); }
+.attune .at-hero-actions { display: flex; gap: 6px; align-self: start; }
+.attune .at-root .at-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid var(--at-line-2);
+  color: var(--at-parch-2);
+  font-family: var(--at-head);
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+.attune .at-root .at-btn:hover { border-color: var(--at-clay); color: var(--at-parch); }
+.attune .at-root .at-btn.is-on { background: var(--at-clay); border-color: var(--at-clay); color: var(--at-char); }
+.attune .at-root .at-btn-icon { width: 32px; padding: 0; justify-content: center; }
+
+/* Stats */
+.attune .at-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 20px 0 6px;
+}
+.attune .at-stat {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: var(--at-radius);
+  background: var(--at-char-2);
+  border: 1px solid var(--at-line);
+}
+.attune .at-stat-label {
+  font-family: var(--at-head);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--at-parch-3);
+}
+.attune .at-stat-value { font-size: 20px; font-weight: 600; color: var(--at-parch); }
+.attune .at-stat-sub { font-size: 12px; color: var(--at-parch-3); font-style: italic; }
+
+/* Runes */
+.attune .at-section {
+  margin: 22px 0 10px;
+  border: none;
+  font-family: var(--at-head);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--at-clay);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.attune .at-section::after { content: ""; flex: 1; height: 1px; background: var(--at-line); }
+.attune .at-runes { display: grid; gap: 6px; }
+.attune .at-rune {
+  border-radius: var(--at-radius);
+  background: var(--at-char-2);
+  border: 1px solid var(--at-line);
+  overflow: hidden;
+  transition: border-color 0.12s;
+}
+.attune .at-rune.is-present:hover { border-color: var(--at-line-2); }
+.attune .at-rune.is-open { border-color: rgba(184, 103, 63, 0.5); }
+.attune .at-root .at-rune-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px 10px 10px;
+}
+.attune .at-glyph {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--at-clay-soft);
+  border: 1px solid rgba(184, 103, 63, 0.45);
+  color: var(--at-clay);
+  font-size: 13px;
+}
+.attune .at-rune-name { flex: 1; min-width: 0; display: grid; font-weight: 600; font-size: 14.5px; }
+.attune .at-rune-name small {
+  font-family: var(--at-head);
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--at-parch-3);
+}
+.attune .at-rune-effect { font-size: 13px; color: var(--at-parch-2); text-align: right; }
+.attune .at-rune-lvl {
+  flex: none;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: var(--at-char-3);
+  color: var(--at-parch-3);
+}
+.attune .at-caret { color: var(--at-parch-3); font-size: 11px; transition: transform 0.15s; }
+.attune .at-rune.is-open .at-caret { transform: rotate(180deg); color: var(--at-clay); }
+
+.attune .at-rune.is-absent .at-glyph,
+.attune .at-rune.is-slot .at-glyph { background: transparent; border-style: dashed; border-color: var(--at-line-2); color: var(--at-parch-3); }
+.attune .at-rune.is-absent .at-rune-name,
+.attune .at-rune.is-slot .at-rune-name { color: var(--at-parch-3); font-weight: 400; font-style: italic; }
+.attune .at-rune.is-slot { background: transparent; border-style: dashed; }
+.attune .at-rune.is-inactive { opacity: 0.55; }
+.attune .at-rune.is-inactive .at-glyph { border-color: var(--at-ember); color: var(--at-ember); background: var(--at-ember-soft); }
+.attune .at-rune.rarity-uncommon .at-rune-name small { color: var(--at-clay); }
+.attune .at-rune.rarity-rare .at-rune-name small,
+.attune .at-rune.rarity-unique .at-rune-name small { color: var(--at-ember); }
+
+.attune .at-rune-body {
+  padding: 2px 16px 14px 54px;
+  color: var(--at-parch-2);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+.attune .at-rune-body p { margin: 0 0 8px; }
+.attune .at-rune-body hr { border: none; border-top: 1px solid var(--at-line); margin: 10px 0; }
+.attune .at-rune-body strong { color: var(--at-parch); }
+.attune .at-rune-body a { color: var(--at-clay); }
+.attune .at-muted { color: var(--at-parch-3); font-style: italic; }
+
+.attune .at-note {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--at-radius);
+  background: var(--at-char-2);
+  color: var(--at-parch-2);
+  font-size: 13px;
+}
+.attune .at-note.is-warn { background: var(--at-ember-soft); color: #e7a493; }
+.attune .at-hero + .at-note { margin-top: 20px; }
+
+.attune .at-blank {
+  height: 100%;
+  min-height: 260px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+  color: var(--at-parch-3);
+  font-style: italic;
+  max-width: 320px;
+  margin: 0 auto;
+}
+.attune .at-blank i { font-size: 34px; color: var(--at-clay); opacity: 0.6; }
+.attune .at-blank p { margin: 0; }
+
+/* ============ Compare ============ */
+.attune .at-cmp-bar { display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 12px; }
+.attune .at-cmp {
+  --at-label: 150px;
+  border: 1px solid var(--at-line);
+  border-radius: var(--at-radius);
+  overflow: hidden;
+}
+.attune .at-cmp-row {
+  display: grid;
+  grid-template-columns: var(--at-label) repeat(var(--at-cols), minmax(0, 1fr));
+  border-top: 1px solid var(--at-line);
+}
+.attune .at-cmp-headrow { border-top: none; background: var(--at-char-2); position: sticky; top: -18px; z-index: 1; }
+.attune .at-cmp-label {
+  padding: 9px 12px;
+  font-family: var(--at-head);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--at-parch-3);
+  display: flex;
+  align-items: center;
+}
+.attune .at-cmp-cell {
+  padding: 9px 12px;
+  border-left: 1px solid var(--at-line);
+  font-size: 13.5px;
+  color: var(--at-parch-2);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.attune .at-cmp-row.is-diff .at-cmp-cell { color: var(--at-parch); }
+.attune .at-cmp-row.is-diff .at-cmp-label { color: var(--at-parch-2); }
+.attune .at-cmp-cell.is-best { color: var(--at-moss); font-weight: 600; background: var(--at-moss-soft); }
+.attune .at-cmp-cell.is-has { color: var(--at-parch); }
+.attune .at-cmp-cell.is-has::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--at-clay); flex: none; }
+.attune .at-cmp-cell.is-na { color: var(--at-parch-3); background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(232, 220, 196, 0.025) 6px 12px); }
+.attune .at-cmp-section {
+  padding: 14px 12px 6px;
+  border-top: 1px solid var(--at-line);
+  font-family: var(--at-head);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--at-clay);
+  background: var(--at-char);
+}
+.attune .at-cmp-head {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  align-items: start;
+  align-content: start;
+  padding: 12px;
+  border-left: 1px solid var(--at-line);
+}
+.attune .at-cmp-head img { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; border: 1px solid var(--at-line-2); }
+.attune .at-cmp-head-text { min-width: 0; display: grid; }
+.attune .at-cmp-head-text strong { font-weight: 600; font-size: 14px; line-height: 1.25; cursor: pointer; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.attune .at-cmp-head-text strong:hover { color: var(--at-clay); }
+.attune .at-cmp-head-text small { font-size: 12px; line-height: 1.3; color: var(--at-parch-3); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.attune .at-root .at-x {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 11px;
+  color: var(--at-parch-3);
+}
+.attune .at-root .at-x:hover { background: var(--at-ember-soft); color: var(--at-ember); }
+
+/* Scrollbars */
+.attune .at-rail-list::-webkit-scrollbar,
+.attune .at-pane::-webkit-scrollbar { width: 8px; }
+.attune .at-rail-list::-webkit-scrollbar-thumb,
+.attune .at-pane::-webkit-scrollbar-thumb { background: var(--at-char-4); border-radius: 8px; }
+
+
+/* ============ Activations ============ */
+.attune .at-hero-actions { flex-wrap: wrap; justify-content: flex-end; max-width: 300px; }
+.attune .at-root .at-btn.is-primary { background: var(--at-clay); border-color: var(--at-clay); color: var(--at-char); }
+.attune .at-root .at-btn.is-primary:hover { background: #c87a52; border-color: #c87a52; color: var(--at-char); }
+.attune .at-root .at-btn-quiet { border-color: transparent; color: var(--at-parch-3); height: 26px; padding: 0 8px; }
+.attune .at-root .at-btn-quiet:hover { border-color: var(--at-ember); color: var(--at-ember); }
+.attune .at-root .at-btn:disabled { opacity: 0.5; }
+
+.attune .at-new {
+  position: absolute;
+  left: 40px;
+  top: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--at-ember);
+  box-shadow: 0 0 0 2px var(--at-char-2), 0 0 8px rgba(207, 74, 50, 0.6);
+}
+.attune .at-item.is-selected .at-new { box-shadow: 0 0 0 2px var(--at-char-4), 0 0 8px rgba(207, 74, 50, 0.6); }
+
+.attune .at-section-count {
+  font-family: var(--at-body);
+  font-size: 11px;
+  letter-spacing: 0;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: var(--at-ember);
+  color: var(--at-parch);
+}
+
+.attune .at-glyph-act {
+  font-family: var(--at-body);
+  font-size: 13px;
+  letter-spacing: -1px;
+  font-weight: 600;
+}
+.attune .at-act.type-reaction .at-glyph-act { font-size: 18px; background: var(--at-ember-soft); border-color: rgba(207, 74, 50, 0.5); color: #e8735c; }
+.attune .at-act.type-free .at-glyph-act { background: var(--at-moss-soft); border-color: rgba(142, 162, 95, 0.5); color: var(--at-moss); }
+.attune .at-act.is-granted { border-color: rgba(142, 162, 95, 0.35); }
+
+.attune .at-act-line {
+  margin: -2px 0 0;
+  padding: 0 16px 8px 54px;
+  font-size: 13.5px;
+  color: var(--at-parch-2);
+  line-height: 1.45;
+}
+.attune .at-act-line strong {
+  font-family: var(--at-head);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--at-clay);
+  margin-right: 4px;
+}
+.attune .at-act-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 0 12px 10px 54px;
+  min-height: 8px;
+}
+.attune .at-onsheet { margin-right: auto; font-size: 13px; color: var(--at-moss); }
+.attune .at-onsheet i { margin-right: 4px; }
+.attune .at-small { font-size: 12px; margin-right: auto; }
+
+/* Character sheet inventory badge */
+.attune-badge {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  border-radius: 50%;
+  font-size: 10px;
+  color: #b8673f;
+  background: rgba(184, 103, 63, 0.14);
+  vertical-align: middle;
+  cursor: pointer;
+}
+.attune-badge:hover { background: #b8673f; color: #1b1815; }
+.attune-badge.is-pending { color: #fff; background: #cf4a32; box-shadow: 0 0 6px rgba(207, 74, 50, 0.6); }
+
+.attune .at-section .at-btn-sm { order: 3; height: 26px; padding: 0 10px; font-size: 10.5px; }
+.attune .at-section::after { order: 2; }
+.attune .at-note + .at-runes { margin-top: 8px; }
+
+</style>
+</head>
+<body>
+<div class="application attune pv-window">
+  <header class="window-header"><i class="window-icon fa-solid fa-gem"></i><span class="title">Attune</span><i class="fa-solid fa-xmark"></i></header>
+  <section class="window-content" id="at-content"></section>
+</div>
+<div id="at-toast"></div>
+<p class="pv-note">Preview with illustrative data. Rune levels and descriptions come from your PF2e compendium in Foundry.</p>
+<script type="text/x-handlebars-template" id="at-template"><div class="at-root">
+  <aside class="at-rail">
+    <div class="at-rail-head">
+      <label class="at-search-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="search" class="at-search" placeholder="{{labels.search}}" autocomplete="off">
+      </label>
+      <nav class="at-filters">
+        {{#each filters}}
+        <button type="button" class="at-filter {{#if active}}is-active{{/if}}" data-action="setFilter" data-filter="{{id}}" data-tooltip="{{label}}" aria-label="{{label}}">
+          <i class="{{icon}}"></i><span>{{count}}</span>
+        </button>
+        {{/each}}
+      </nav>
+    </div>
+
+    <div class="at-rail-list">
+      {{#each owners}}
+      <section class="at-owner">
+        <header class="at-owner-head">
+          <img src="{{img}}" alt="">
+          <span class="at-owner-name">{{name}}</span>
+          {{#if isOwn}}<span class="at-tag">{{@root.labels.you}}</span>{{/if}}
+        </header>
+        {{#each items}}
+        <div class="at-item {{#if isSelected}}is-selected{{/if}} {{#if inCompare}}in-compare{{/if}}" data-action="select" data-key="{{key}}" data-search="{{searchText}}">
+          <img class="at-item-img" src="{{img}}" alt="">
+          <div class="at-item-text">
+            <span class="at-item-name">{{#if isEquipped}}<i class="fa-solid fa-hand at-eq" data-tooltip="{{@root.labels.equipped}}"></i>{{/if}}{{name}}</span>
+            <span class="at-item-sum {{#if hidden}}is-hidden{{/if}}">{{summary}}</span>
+          </div>
+          {{#if hasNew}}<span class="at-new" data-tooltip="{{@root.labels.addToSheet}}"></span>{{/if}}
+          <button type="button" class="at-cmp-toggle" data-action="toggleCompare" data-key="{{key}}"
+            data-tooltip="{{#if inCompare}}{{@root.labels.removeCompare}}{{else}}{{@root.labels.addCompare}}{{/if}}">
+            <i class="fa-solid {{#if inCompare}}fa-check{{else}}fa-plus{{/if}}"></i>
+          </button>
+        </div>
+        {{/each}}
+      </section>
+      {{else}}
+      <p class="at-empty">{{labels.noItems}}</p>
+      {{/each}}
+      <p class="at-empty at-search-empty" hidden>{{labels.noMatches}}</p>
+    </div>
+  </aside>
+
+  <main class="at-main">
+    <nav class="at-tabs">
+      <button type="button" class="at-tab {{#if isDetail}}is-active{{/if}}" data-action="setTab" data-tab="detail">
+        <i class="fa-solid fa-book-open"></i> {{labels.details}}
+      </button>
+      <button type="button" class="at-tab {{#if isCompare}}is-active{{/if}}" data-action="setTab" data-tab="compare">
+        <i class="fa-solid fa-scale-balanced"></i> {{labels.compare}}
+        <span class="at-count {{#if compareCount}}is-on{{/if}}">{{compareCount}}/{{compareMax}}</span>
+      </button>
+    </nav>
+
+    <div class="at-pane">
+      {{#if isDetail}}
+        {{#if selected}}
+        {{#with selected}}
+        <header class="at-hero">
+          <img class="at-hero-img" src="{{img}}" alt="">
+          <div class="at-hero-text">
+            <h2>{{name}}</h2>
+            <p class="at-meta">
+              <span><i class="{{categoryIcon}}"></i> {{categoryLabel}}</span>
+              <span>{{levelLabel}}</span>
+              {{#if price}}<span>{{price}}</span>{{/if}}
+              <span>{{ownerName}}</span>
+            </p>
+            <p class="at-chips">
+              {{#if carryLabel}}<span class="at-chip {{#if isEquipped}}is-moss{{/if}}">{{carryLabel}}</span>{{/if}}
+              {{#if isInvested}}<span class="at-chip is-moss">{{@root.labels.invested}}</span>{{/if}}
+              {{#if notInvested}}<span class="at-chip is-ember">{{@root.labels.notInvested}}</span>{{/if}}
+              {{#if hidden}}<span class="at-chip is-ember">{{@root.labels.unidentified}}</span>{{/if}}
+            </p>
+          </div>
+          <div class="at-hero-actions">
+            <button type="button" class="at-btn {{#if inCompare}}is-on{{/if}}" data-action="toggleCompare" data-key="{{key}}">
+              <i class="fa-solid fa-scale-balanced"></i>
+              {{#if inCompare}}{{@root.labels.removeCompare}}{{else}}{{@root.labels.addCompare}}{{/if}}
+            </button>
+            {{#if canOpen}}
+            <button type="button" class="at-btn at-btn-icon" data-action="openSheet" data-key="{{key}}" data-tooltip="{{@root.labels.openSheet}}" aria-label="{{@root.labels.openSheet}}">
+              <i class="fa-solid fa-up-right-from-square"></i>
+            </button>
+            {{/if}}
+          </div>
+        </header>
+
+        {{#if hidden}}
+        <p class="at-note"><i class="fa-solid fa-eye-slash"></i> {{@root.labels.unidentifiedNote}}</p>
+        {{else}}
+        {{#if stats.length}}
+        <div class="at-stats">
+          {{#each stats}}
+          <div class="at-stat">
+            <span class="at-stat-label">{{label}}</span>
+            <span class="at-stat-value">{{value}}</span>
+            {{#if sub}}<span class="at-stat-sub">{{sub}}</span>{{/if}}
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+
+        {{#if hasActivations}}
+        <h3 class="at-section">
+          {{@root.labels.activations}}
+          {{#if hasNew}}<span class="at-section-count">{{addable}}</span>{{/if}}
+          {{#if canAddAll}}<button type="button" class="at-btn at-btn-sm is-primary" data-action="addAll" data-key="{{key}}"><i class="fa-solid fa-plus"></i> {{@root.labels.addAll}}</button>{{/if}}
+        </h3>
+        {{#if investNote}}<p class="at-note is-warn"><i class="fa-solid fa-triangle-exclamation"></i> {{investNote}}</p>{{/if}}
+        <div class="at-runes">
+          {{#each activations}}
+          <div class="at-rune at-act is-present {{#if expanded}}is-open{{/if}} {{#if onSheet}}is-granted{{/if}} type-{{actionType}}">
+            <button type="button" class="at-rune-head" data-action="toggleRune" data-rune="{{descKey}}">
+              <span class="at-glyph at-glyph-act">{{glyph}}</span>
+              <span class="at-rune-name">
+                {{name}}
+                <small>{{typeLabel}}{{#if traitsText}} · {{traitsText}}{{/if}}</small>
+              </span>
+              {{#if frequency}}<span class="at-rune-lvl">{{frequency}}</span>{{/if}}
+              <i class="fa-solid fa-chevron-down at-caret"></i>
+            </button>
+            {{#unless expanded}}
+            {{#if trigger}}<p class="at-act-line"><strong>{{@root.labels.trigger}}</strong> {{trigger}}</p>{{/if}}
+            {{#if requirements}}<p class="at-act-line"><strong>{{@root.labels.requirements}}</strong> {{requirements}}</p>{{/if}}
+            {{/unless}}
+            {{#if expanded}}
+            <div class="at-rune-body">
+              {{#if descLoading}}<p class="at-muted"><i class="fa-solid fa-spinner fa-spin"></i> {{@root.labels.loading}}</p>
+              {{else if descMissing}}<p class="at-muted">{{@root.labels.noDesc}}</p>
+              {{else}}{{{descHtml}}}{{/if}}
+            </div>
+            {{/if}}
+            <div class="at-act-foot">
+              {{#if onSheet}}<span class="at-onsheet"><i class="fa-solid fa-circle-check"></i> {{@root.labels.onSheet}}</span>{{/if}}
+              {{#if canEdit}}
+                {{#if onSheet}}
+                <button type="button" class="at-btn at-btn-quiet" data-action="toggleActivation" data-key="{{itemKey}}" data-index="{{index}}" data-on="true">{{@root.labels.removeFromSheet}}</button>
+                {{else}}
+                <button type="button" class="at-btn is-primary" data-action="toggleActivation" data-key="{{itemKey}}" data-index="{{index}}" data-on="false"><i class="fa-solid fa-plus"></i> {{@root.labels.addToSheet}}</button>
+                {{/if}}
+              {{else}}
+                {{#unless onSheet}}<span class="at-muted at-small">{{@root.labels.readOnly}}</span>{{/unless}}
+              {{/if}}
+            </div>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+
+        {{#each runeGroups}}
+        <h3 class="at-section">{{title}}</h3>
+        <div class="at-runes">
+          {{#each runes}}
+          {{#if isSlot}}
+          <div class="at-rune is-slot">
+            <div class="at-rune-head">
+              <span class="at-glyph"><i class="fa-regular fa-circle"></i></span>
+              <span class="at-rune-name">{{@root.labels.emptySlot}}</span>
+            </div>
+          </div>
+          {{else}}
+          <div class="at-rune {{#if present}}is-present{{else}}is-absent{{/if}} {{#if inactive}}is-inactive{{/if}} {{#if expanded}}is-open{{/if}} {{#if isRare}}is-rare rarity-{{rarity}}{{/if}}">
+            <button type="button" class="at-rune-head" {{#if present}}data-action="toggleRune" data-rune="{{runeKey}}"{{else}}disabled{{/if}}>
+              <span class="at-glyph"><i class="{{icon}}"></i></span>
+              <span class="at-rune-name">
+                {{name}}
+                <small>{{kindLabel}}{{#if inactive}} · {{@root.labels.inactive}}{{/if}}</small>
+              </span>
+              {{#if effect}}<span class="at-rune-effect">{{effect}}</span>{{/if}}
+              {{#if level}}<span class="at-rune-lvl">{{level}}</span>{{/if}}
+              {{#if present}}<i class="fa-solid fa-chevron-down at-caret"></i>{{/if}}
+            </button>
+            {{#if expanded}}
+            <div class="at-rune-body">
+              {{#if descLoading}}<p class="at-muted"><i class="fa-solid fa-spinner fa-spin"></i> {{@root.labels.loading}}</p>
+              {{else if descMissing}}<p class="at-muted">{{@root.labels.noDesc}}</p>
+              {{else}}{{{descHtml}}}{{/if}}
+            </div>
+            {{/if}}
+          </div>
+          {{/if}}
+          {{/each}}
+        </div>
+        {{#if note}}<p class="at-note is-warn"><i class="fa-solid fa-triangle-exclamation"></i> {{note}}</p>{{/if}}
+        {{/each}}
+        {{/if}}
+        {{/with}}
+        {{else}}
+        <div class="at-blank"><i class="fa-solid fa-gem"></i><p>{{labels.noSelection}}</p></div>
+        {{/if}}
+
+      {{else}}
+        {{#if compareCount}}
+        <div class="at-cmp-bar">
+          <button type="button" class="at-btn {{#if diffOnly}}is-on{{/if}}" data-action="toggleDiff">
+            <i class="fa-solid {{#if diffOnly}}fa-square-check{{else}}fa-square{{/if}}"></i> {{labels.diffOnly}}
+          </button>
+          <button type="button" class="at-btn" data-action="clearCompare"><i class="fa-solid fa-broom"></i> {{labels.clearCompare}}</button>
+        </div>
+        <div class="at-cmp" style="--at-cols: {{compareCount}}">
+          <div class="at-cmp-row at-cmp-headrow">
+            <div class="at-cmp-label"></div>
+            {{#each compare}}
+            <div class="at-cmp-head">
+              <img src="{{img}}" alt="">
+              <div class="at-cmp-head-text">
+                <strong data-action="select" data-key="{{key}}">{{name}}</strong>
+                <small>{{summary}}</small>
+              </div>
+              <button type="button" class="at-x" data-action="toggleCompare" data-key="{{key}}" aria-label="{{@root.labels.removeCompare}}"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            {{/each}}
+          </div>
+          {{#each compareRows}}
+            {{#if section}}
+            <div class="at-cmp-section">{{section}}</div>
+            {{else}}
+            <div class="at-cmp-row {{#if diff}}is-diff{{/if}}">
+              <div class="at-cmp-label">{{label}}</div>
+              {{#each cells}}
+              <div class="at-cmp-cell {{#if best}}is-best{{/if}} {{#if na}}is-na{{/if}} {{#if has}}is-has{{/if}}">{{#if best}}<i class="fa-solid fa-caret-up"></i> {{/if}}{{text}}</div>
+              {{/each}}
+            </div>
+            {{/if}}
+          {{/each}}
+        </div>
+        {{else}}
+        <div class="at-blank"><i class="fa-solid fa-scale-balanced"></i><p>{{compareEmptyText}}</p></div>
+        {{/if}}
+      {{/if}}
+    </div>
+  </main>
+</div>
+</script>
+<script type="module">
+const LANG = {
+  "ATTUNE": {
+    "Title": "Attune",
+    "Open": "Open Attune",
+    "Button": "Attune",
+    "Keybind": "Toggle Attune",
+    "KeybindHint": "Open or close the Attune window.",
+    "Settings": {
+      "ShowParty": {
+        "Name": "Show party members' gear",
+        "Hint": "Players can browse and compare the runes of other party members, not only their own characters."
+      },
+      "SheetBadges": {
+        "Name": "Inventory badges",
+        "Hint": "Show a small icon on character sheet inventory rows for items with runes or activations."
+      }
+    },
+    "UI": {
+      "search": "Search items, runes or abilities…",
+      "noMatches": "Nothing matches that search.",
+      "filterAll": "All",
+      "filterWeapon": "Weapons",
+      "filterArmor": "Armor",
+      "filterShield": "Shields",
+      "you": "Yours",
+      "details": "Details",
+      "compare": "Compare",
+      "addCompare": "Compare",
+      "removeCompare": "Remove",
+      "openSheet": "Open item sheet",
+      "noItems": "No magic equipment found on your characters.",
+      "noSelection": "Select an item to see what it does.",
+      "compareEmpty": "Add up to {max} items with the + button to compare them side by side.",
+      "compareFull": "You can compare up to {max} items at a time.",
+      "clearCompare": "Clear",
+      "diffOnly": "Only differences",
+      "fundamental": "Fundamental runes",
+      "propertySlots": "Property runes · {used}/{total} slots",
+      "emptySlot": "Empty slot",
+      "overflowNote": "This item carries more property runes than its potency rune allows. The extra ones are inactive.",
+      "inactive": "inactive",
+      "inactiveExtra": "extra runes inactive",
+      "noRunes": "No runes",
+      "unidentified": "Unidentified",
+      "unidentifiedNote": "This item has not been identified yet. Its runes remain a mystery.",
+      "equipped": "Equipped",
+      "carried": "Carried",
+      "stowed": "Stowed",
+      "loading": "Reading the runes…",
+      "noDesc": "No description found for this rune.",
+      "levelN": "Lv {n}",
+      "none": "None",
+      "conditional": "conditional",
+      "kind_potency": "Potency",
+      "kind_striking": "Striking",
+      "kind_resilient": "Resilient",
+      "kind_reinforcing": "Reinforcing",
+      "kind_property": "Property",
+      "no_potency": "No potency rune",
+      "no_striking": "No striking rune",
+      "no_resilient": "No resilient rune",
+      "no_reinforcing": "No reinforcing rune",
+      "weaponPotencyN": "+{n} Weapon Potency",
+      "armorPotencyN": "+{n} Armor Potency",
+      "striking": "Striking",
+      "greaterStriking": "Greater Striking",
+      "majorStriking": "Major Striking",
+      "resilient": "Resilient",
+      "greaterResilient": "Greater Resilient",
+      "majorResilient": "Major Resilient",
+      "minorReinforcing": "Minor Reinforcing",
+      "lesserReinforcing": "Lesser Reinforcing",
+      "moderateReinforcing": "Moderate Reinforcing",
+      "greaterReinforcing": "Greater Reinforcing",
+      "majorReinforcing": "Major Reinforcing",
+      "supremeReinforcing": "Supreme Reinforcing",
+      "effectPotencyWeapon": "+{n} attack",
+      "effectPotencyArmor": "+{n} AC",
+      "effectStriking": "{n} weapon dice",
+      "effectResilient": "+{n} saves",
+      "effectReinforcing": "Hardness & HP up",
+      "rarity_uncommon": "Uncommon",
+      "rarity_rare": "Rare",
+      "rarity_unique": "Unique",
+      "cat_weapon": "Weapon",
+      "cat_armor": "Armor",
+      "cat_shield": "Shield",
+      "statAttack": "Attack",
+      "statDamage": "Damage",
+      "statAvgDamage": "Average damage",
+      "statAC": "AC bonus",
+      "statSaves": "Saves",
+      "statHardness": "Hardness",
+      "statHP": "Hit Points",
+      "statRaise": "Raised",
+      "statSlots": "Property slots",
+      "itemBonus": "item bonus",
+      "circumstance": "circumstance to AC",
+      "inclPotency": "incl. +{n} potency",
+      "rowOwner": "Owner",
+      "rowType": "Type",
+      "rowLevel": "Level",
+      "rowPrice": "Price",
+      "sectionGeneral": "General",
+      "sectionFundamental": "Fundamental",
+      "sectionStats": "Effective stats",
+      "sectionProperty": "Property runes",
+      "slotOne": "{n} slot",
+      "slotMany": "{n} slots",
+      "filterGear": "Gear",
+      "cat_gear": "Gear",
+      "noActivations": "No activations",
+      "sectionActivations": "Activations",
+      "activations": "Activations",
+      "addToSheet": "Add to sheet",
+      "removeFromSheet": "Remove",
+      "onSheet": "On sheet",
+      "addAll": "Add all to sheet",
+      "addableN": "{n} new",
+      "trigger": "Trigger",
+      "requirements": "Requirements",
+      "frequency": "Frequency",
+      "actionOne": "1 action",
+      "actionsN": "{n} actions",
+      "type_reaction": "Reaction",
+      "type_free": "Free action",
+      "invested": "Invested",
+      "notInvested": "Not invested",
+      "notInvestedNote": "This item is not invested. Its activations only work once you invest it.",
+      "readOnly": "Only the character's owner can add this to the sheet.",
+      "grantedBy": "Granted by {name}.",
+      "addedNotice": "{name} added to {actor}'s actions.",
+      "removedNotice": "{name} removed from {actor}'s actions.",
+      "addedAllNotice": "{n} activation(s) added to {actor}'s actions.",
+      "grantError": "Could not update the character sheet. See the console for details."
+    },
+    "Badge": {
+      "Pending": "{n} activation(s) not on your sheet yet — open in Attune",
+      "Activations": "Activations — open in Attune",
+      "Runes": "Runes — open in Attune"
+    }
+  }
+}
+;
+/**
+ * Parses item activations out of a PF2e item description.
+ * Pure string work (no DOM, no Foundry), shared with the standalone preview.
+ *
+ * Handles both layouts found in PF2e data:
+ *   <p><strong>Activate—Name</strong> <span class="action-glyph">R</span> (manipulate)</p>
+ *   <p><strong>Trigger</strong> …</p><p><strong>Effect</strong> …</p>
+ * and the legacy inline one:
+ *   <p><strong>Activate</strong> <span class="action-glyph">R</span> command; <strong>Trigger</strong> …; <strong>Effect</strong> …</p>
+ *
+ * Only activations with an action glyph (1, 2, 3, reaction, free) are returned — those are
+ * the ones that belong among the character's encounter actions.
+ */
+
+const GLYPHS = {
+  "1": ["action", 1], a: ["action", 1],
+  "2": ["action", 2], d: ["action", 2],
+  "3": ["action", 3], t: ["action", 3],
+  r: ["reaction", null],
+  f: ["free", null]
+};
+
+const ACTIVATE = /^(activate|activation|ativar|ativa[cç][aã]o)\b/i;
+const LABELS = {
+  frequency: /^(frequency|frequ[eê]ncia)\b/i,
+  trigger: /^(trigger|gatilho)\b/i,
+  requirements: /^(requirements?|requisitos?|pr[eé]-requisitos?)\b/i,
+  effect: /^(effect|efeito)\b/i
+};
+const GLYPH_RE = /<span[^>]*class="[^"]*action-glyph[^"]*"[^>]*>\s*([^<]*?)\s*<\/span>/i;
+
+const stripTags = (s) => String(s ?? "").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+const trimPunct = (s) => s.replace(/^[\s;:.,—–-]+/, "").replace(/[\s;,]+$/, "").trim();
+
+function labelKind(label) {
+  if (ACTIVATE.test(label)) return "activate";
+  for (const [kind, re] of Object.entries(LABELS)) if (re.test(label)) return kind;
+  return null;
+}
+
+/** Trim dangling paragraph boundaries so a fragment can be re-wrapped in <p>. */
+function cleanFragment(html) {
+  return String(html ?? "")
+    .replace(/^[\s;:]*(<\/p>\s*)?/i, "")
+    .replace(/(\s|;|<\/p>|<p[^>]*>|<br\s*\/?>|<hr[^>]*>)+$/i, "")
+    .trim();
+}
+
+function parseActivations(html) {
+  const src = String(html ?? "");
+  const marks = [];
+  const re = /<strong[^>]*>([\s\S]*?)<\/strong>/gi;
+  let m;
+  while ((m = re.exec(src))) {
+    const label = stripTags(m[1]);
+    const kind = labelKind(label);
+    if (kind) marks.push({ label, kind, start: m.index, end: re.lastIndex });
+  }
+
+  const out = [];
+  const acts = marks.filter((mk) => mk.kind === "activate");
+  acts.forEach((act, a) => {
+    // Next activation starts a new one; inside, <hr> separates Trigger from Effect, so only the
+    // text after the last labeled segment is cut at the first <hr> or heading.
+    const limit = acts[a + 1]?.start ?? src.length;
+    const segs = marks.filter((mk) => mk.start >= act.start && mk.start < limit);
+    const last = segs[segs.length - 1];
+    const stop = src.slice(last.end, limit).search(/<hr\b|<h[1-6]\b/i);
+    const regionEnd = stop >= 0 ? last.end + stop : limit;
+
+    const content = (i) => src.slice(segs[i].end, segs[i + 1]?.start ?? regionEnd);
+    const head = content(0);
+    const glyphMatch = head.match(GLYPH_RE);
+    const glyph = GLYPHS[String(glyphMatch?.[1] ?? "").trim().toLowerCase()];
+    if (!glyph) return;
+
+    const dash = act.label.split(/\s*[—–]\s*|\s+-\s+/);
+    const name = dash.length > 1 ? dash.slice(1).join(" — ").trim() : "";
+    const traitsText = trimPunct(stripTags(head.replace(GLYPH_RE, "")).split(";")[0]).replace(/^\(|\)$/g, "");
+    const traits = traitsText ? traitsText.split(/\s*,\s*/).map((t) => t.toLowerCase()).filter(Boolean) : [];
+
+    const fields = { frequency: "", trigger: "", requirements: "", effect: "" };
+    const parts = [];
+    for (let i = 1; i < segs.length; i++) {
+      const raw = content(i);
+      const text = trimPunct(stripTags(raw));
+      if (segs[i].kind in fields && !fields[segs[i].kind]) fields[segs[i].kind] = text;
+      parts.push(`<p><strong>${segs[i].label}</strong> ${cleanFragment(raw)}</p>`);
+    }
+
+    out.push({
+      index: out.length,
+      name,
+      actionType: glyph[0],
+      actions: glyph[1],
+      traits,
+      frequency: fields.frequency,
+      trigger: fields.trigger,
+      requirements: fields.requirements,
+      effect: fields.effect,
+      html: parts.join("\n")
+    });
+  });
+  return out;
+}
+
+/** "once per day" → { max: 1, per: "day" } in PF2e frequency terms, or null. */
+function parseFrequency(text) {
+  const t = String(text ?? "").toLowerCase();
+  const counts = { once: 1, twice: 2, "three times": 3, "1": 1, "2": 2, "3": 3 };
+  const cm = t.match(/\b(once|twice|three times|\d+)\b/);
+  const max = cm ? (counts[cm[1]] ?? Number(cm[1])) : null;
+  if (!max) return null;
+  const pers = [
+    [/per (turn)/, "turn"], [/per (round)/, "round"], [/per (10 minutes)/, "PT10M"],
+    [/per (minute)/, "PT1M"], [/per (hour)/, "PT1H"], [/per (day)/, "day"], [/per (week)/, "P1W"],
+    [/per (month)/, "P1M"], [/per (year)/, "P1Y"]
+  ];
+  for (const [re, per] of pers) if (re.test(t)) return { max, per };
+  return null;
+}
+
+function glyphText(actionType, actions) {
+  if (actionType === "reaction") return "⟲";
+  if (actionType === "free") return "◇";
+  return "◆".repeat(Math.max(1, Math.min(3, Number(actions) || 1)));
+}
+
+/**
+ * Attune view model.
+ * Pure functions with no Foundry globals, so the exact same logic drives the module
+ * and the standalone HTML preview.
+ *
+ * Normalized item shape (produced by adapter.js in Foundry, or by mock data in the preview):
+ * {
+ *   key, actorId, itemId, ownerName, name, img, category: "weapon"|"armor"|"shield"|"gear",
+ *   level, price, priceGp, carry: "equipped"|"carried"|"stowed", hidden, canOpen, canEdit,
+ *   invested: true|false|null,
+ *   runes: { potency, striking, resilient, reinforcing, property: [slug] },
+ *   base:  { dice, die, damageTypeLabel, acBonus, hardness, maxHp },
+ *   activations: [parseActivations() entries], granted: { [index]: actionItemId }
+ * }
+ *
+ * Catalog interface:
+ *   property(category, slug)        -> { label, level, rarity, damage: [{diceNumber, dieSize, damageType, typeLabel, conditional}], effect? }
+ *   fundamental(category, kind, n)  -> { level }
+ */
+
+
+
+const COMPARE_MAX = 3;
+const CATEGORY_ORDER = ["weapon", "armor", "shield", "gear"];
+const FUNDAMENTAL_KINDS = { weapon: ["potency", "striking"], armor: ["potency", "resilient"], shield: ["reinforcing"], gear: [] };
+
+const KIND_ICONS = {
+  potency: "fa-gem",
+  striking: "fa-burst",
+  resilient: "fa-shield-halved",
+  reinforcing: "fa-shield",
+  property: "fa-diamond"
+};
+
+const DAMAGE_ICONS = {
+  fire: "fa-fire",
+  cold: "fa-snowflake",
+  electricity: "fa-bolt",
+  acid: "fa-flask",
+  sonic: "fa-wave-square",
+  spirit: "fa-ghost",
+  vitality: "fa-sun",
+  void: "fa-skull",
+  force: "fa-hand-sparkles",
+  poison: "fa-skull-crossbones",
+  mental: "fa-brain",
+  bleed: "fa-droplet"
+};
+
+const TIER_KEYS = {
+  striking: ["striking", "greaterStriking", "majorStriking"],
+  resilient: ["resilient", "greaterResilient", "majorResilient"],
+  reinforcing: [
+    "minorReinforcing", "lesserReinforcing", "moderateReinforcing",
+    "greaterReinforcing", "majorReinforcing", "supremeReinforcing"
+  ]
+};
+
+function fmt(str, data = {}) {
+  return String(str ?? "").replace(/\{(\w+)\}/g, (m, k) => (k in data ? data[k] : m));
+}
+
+function humanize(slug) {
+  return String(slug ?? "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+    .trim();
+}
+
+function kebab(slug) {
+  return String(slug ?? "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .replace(/[\s_]+/g, "-")
+    .toLowerCase();
+}
+
+const num = (v) => Number(v) || 0;
+const signed = (n) => (n >= 0 ? `+${n}` : `${n}`);
+
+function dieAverage(die) {
+  const faces = num(String(die ?? "").replace(/\D/g, ""));
+  return faces ? (faces + 1) / 2 : 0;
+}
+
+function initialState() {
+  return {
+    selectedKey: null,
+    compareKeys: [],
+    tab: "detail",
+    filter: "all",
+    search: "",
+    expandedRune: null,
+    descriptions: {},
+    diffOnly: false,
+    focusActor: null,
+    focusItem: null
+  };
+}
+
+/** Returns "added" | "removed" | "full". */
+function toggleCompareKey(state, key) {
+  const i = state.compareKeys.indexOf(key);
+  if (i >= 0) {
+    state.compareKeys.splice(i, 1);
+    return "removed";
+  }
+  if (state.compareKeys.length >= COMPARE_MAX) return "full";
+  state.compareKeys.push(key);
+  return "added";
+}
+
+function fundamentalName(category, kind, n, L) {
+  if (!n) return L[`no_${kind}`] ?? L.none;
+  if (kind === "potency") return fmt(category === "armor" ? L.armorPotencyN : L.weaponPotencyN, { n });
+  const key = TIER_KEYS[kind]?.[n - 1];
+  return (key && L[key]) || `${humanize(kind)} ${n}`;
+}
+
+function fundamentalEffect(category, kind, n, L) {
+  if (!n) return "";
+  switch (kind) {
+    case "potency": {
+      const bonus = fmt(category === "armor" ? L.effectPotencyArmor : L.effectPotencyWeapon, { n });
+      return `${bonus} · ${fmt(n === 1 ? L.slotOne : L.slotMany, { n })}`;
+    }
+    case "striking": return fmt(L.effectStriking, { n: n + 1 });
+    case "resilient": return fmt(L.effectResilient, { n });
+    case "reinforcing": return L.effectReinforcing;
+    default: return "";
+  }
+}
+
+function descState(runeKey, state) {
+  const expanded = state.expandedRune === runeKey;
+  const d = state.descriptions?.[runeKey];
+  return {
+    expanded,
+    descLoading: expanded && (!d || d.loading),
+    descHtml: expanded && d && !d.loading ? (d.html ?? "") : "",
+    descMissing: expanded && !!d && !d.loading && !d.html
+  };
+}
+
+function damageText(entries, L) {
+  return (entries ?? [])
+    .map((e) => {
+      const base = `+${e.diceNumber ?? 1}${e.dieSize ?? ""} ${e.typeLabel ?? e.damageType ?? ""}`.trim();
+      return e.conditional ? `${base} (${L.conditional})` : base;
+    })
+    .join(", ");
+}
+
+function fundamentalRune(item, kind, L, catalog, state) {
+  const n = num(item.runes?.[kind]);
+  const meta = (n && catalog.fundamental?.(item.category, kind, n)) || {};
+  const runeKey = `${item.category}:${kind}:${n}`;
+  return {
+    kind,
+    kindLabel: L[`kind_${kind}`] ?? humanize(kind),
+    name: fundamentalName(item.category, kind, n, L),
+    value: n,
+    present: n > 0,
+    icon: `fa-solid ${KIND_ICONS[kind] ?? KIND_ICONS.property}`,
+    level: meta.level ? fmt(L.levelN, { n: meta.level }) : "",
+    effect: fundamentalEffect(item.category, kind, n, L),
+    runeKey,
+    ...(n ? descState(runeKey, state) : {})
+  };
+}
+
+function propertyRune(item, slug, index, total, L, catalog, state) {
+  const meta = catalog.property?.(item.category, slug) || {};
+  const runeKey = `${item.category}:property:${slug}`;
+  const rarity = meta.rarity || "common";
+  const damage = meta.damage ?? [];
+  const firstType = damage[0]?.damageType;
+  return {
+    kind: "property",
+    slug,
+    rarity,
+    isRare: rarity !== "common",
+    kindLabel: rarity !== "common" ? (L[`rarity_${rarity}`] ?? humanize(rarity)) : L.kind_property,
+    name: meta.label || humanize(slug),
+    present: true,
+    inactive: index >= total,
+    icon: `fa-solid ${DAMAGE_ICONS[firstType] ?? KIND_ICONS.property}`,
+    level: meta.level ? fmt(L.levelN, { n: meta.level }) : "",
+    effect: meta.effect || damageText(damage, L),
+    damage,
+    runeKey,
+    ...descState(runeKey, state)
+  };
+}
+
+function itemView(item, L, catalog, state) {
+  const category = item.category;
+  const runes = item.runes ?? {};
+  const hidden = !!item.hidden;
+
+  const fundamentals = hidden ? [] : (FUNDAMENTAL_KINDS[category] ?? []).map((k) => fundamentalRune(item, k, L, catalog, state));
+  const slugs = hidden ? [] : [...(runes.property ?? [])];
+  const hasSlots = category === "weapon" || category === "armor";
+  const total = hasSlots ? num(runes.potency) : 0;
+  const properties = slugs.map((s, i) => propertyRune(item, s, i, total, L, catalog, state));
+  const emptySlots = Array.from({ length: Math.max(0, total - slugs.length) }, () => ({ isSlot: true }));
+  const overflow = slugs.length > total;
+
+  const runeGroups = [];
+  if (fundamentals.length) runeGroups.push({ title: L.fundamental, runes: fundamentals, note: "" });
+  if (!hidden && (hasSlots || properties.length)) {
+    runeGroups.push({
+      title: fmt(L.propertySlots, { used: slugs.length, total }),
+      runes: [...properties, ...emptySlots],
+      note: overflow ? L.overflowNote : ""
+    });
+  }
+
+  const activations = hidden ? [] : (item.activations ?? []).map((a) => {
+    const descKey = `act:${item.key}#${a.index}`;
+    const onSheet = !!item.granted?.[a.index];
+    return {
+      index: a.index,
+      itemKey: item.key,
+      name: a.name || item.name,
+      glyph: glyphText(a.actionType, a.actions),
+      actionType: a.actionType,
+      typeLabel: a.actionType === "action" ? fmt(a.actions > 1 ? L.actionsN : L.actionOne, { n: a.actions || 1 }) : (L[`type_${a.actionType}`] ?? humanize(a.actionType)),
+      traitsText: (a.traits ?? []).map(humanize).join(", "),
+      frequency: a.frequency || "",
+      trigger: a.trigger || "",
+      requirements: a.requirements || "",
+      onSheet,
+      canEdit: !!item.canEdit,
+      descKey,
+      ...descState(descKey, state)
+    };
+  });
+  const addable = activations.filter((a) => a.canEdit && !a.onSheet).length;
+
+  const raw = {
+    level: num(item.level),
+    priceGp: num(item.priceGp),
+    potency: num(runes.potency),
+    striking: num(runes.striking),
+    resilient: num(runes.resilient),
+    reinforcing: num(runes.reinforcing),
+    used: slugs.length,
+    total
+  };
+
+  const stats = [];
+  if (!hidden) {
+    const slotsStat = { label: L.statSlots, value: `${slugs.length}/${total}`, sub: overflow ? L.inactiveExtra : "" };
+    if (category === "weapon") {
+      const dice = (num(item.base?.dice) || 1) + raw.striking;
+      const die = item.base?.die ?? "";
+      const active = properties.filter((p) => !p.inactive);
+      const extraAvg = active
+        .flatMap((p) => p.damage)
+        .filter((e) => !e.conditional)
+        .reduce((s, e) => s + (num(e.diceNumber) || 1) * dieAverage(e.dieSize), 0);
+      raw.damageText = die ? `${dice}${die} ${item.base?.damageTypeLabel ?? ""}`.trim() : "—";
+      raw.avgDamage = dice * dieAverage(die) + extraAvg;
+      const extras = active.map((p) => damageText(p.damage, L)).filter(Boolean).join(", ");
+      stats.push(
+        { label: L.statAttack, value: signed(raw.potency), sub: L.itemBonus },
+        { label: L.statDamage, value: raw.damageText, sub: extras },
+        slotsStat
+      );
+    } else if (category === "armor") {
+      raw.ac = num(item.base?.acBonus) + raw.potency;
+      raw.saves = raw.resilient;
+      stats.push(
+        { label: L.statAC, value: signed(raw.ac), sub: raw.potency ? fmt(L.inclPotency, { n: raw.potency }) : "" },
+        { label: L.statSaves, value: signed(raw.saves), sub: L.itemBonus },
+        slotsStat
+      );
+    } else if (category === "shield") {
+      raw.hardness = num(item.base?.hardness);
+      raw.hp = num(item.base?.maxHp);
+      raw.raise = num(item.base?.acBonus);
+      stats.push(
+        { label: L.statHardness, value: String(raw.hardness), sub: "" },
+        { label: L.statHP, value: String(raw.hp), sub: "" },
+        { label: L.statRaise, value: signed(raw.raise), sub: L.circumstance }
+      );
+    }
+  }
+
+  const parts = [];
+  if (hidden) parts.push(L.unidentified);
+  else {
+    const f = [];
+    if (raw.potency && category !== "shield") f.push(`+${raw.potency}`);
+    for (const k of ["striking", "resilient", "reinforcing"]) if (raw[k]) f.push(fundamentalName(category, k, raw[k], L));
+    if (f.length) parts.push(f.join(" "));
+    if (properties.length) parts.push(properties.map((p) => p.name).join(", "));
+    if (activations.length) parts.push(activations.map((a) => `${a.glyph} ${a.name}`).join(", "));
+    if (!parts.length) parts.push(category === "gear" ? L.noActivations : L.noRunes);
+  }
+  const summary = parts.join(" · ");
+
+  return {
+    key: item.key,
+    actorId: item.actorId,
+    itemId: item.itemId,
+    ownerName: item.ownerName,
+    name: item.name,
+    img: item.img,
+    category,
+    categoryLabel: L[`cat_${category}`] ?? humanize(category),
+    categoryIcon: `fa-solid ${{ weapon: "fa-khanda", armor: "fa-vest", shield: "fa-shield", gear: "fa-ring" }[category] ?? "fa-box"}`,
+    levelLabel: fmt(L.levelN, { n: raw.level }),
+    price: item.price || "",
+    carry: item.carry,
+    carryLabel: L[item.carry] ?? "",
+    isEquipped: item.carry === "equipped",
+    hidden,
+    canOpen: !!item.canOpen,
+    isInvested: item.invested === true,
+    notInvested: item.invested === false,
+    investNote: item.invested === false && activations.length ? L.notInvestedNote : "",
+    activations,
+    hasActivations: activations.length > 0,
+    addable,
+    hasNew: addable > 0,
+    canAddAll: addable > 1,
+    summary,
+    runeCount: fundamentals.filter((f) => f.present).length + properties.length,
+    searchText: [item.name, item.ownerName, summary, ...activations.map((a) => a.trigger)].join(" ").toLowerCase(),
+    runeGroups,
+    properties,
+    stats,
+    raw
+  };
+}
+
+function sortItems(a, b) {
+  return (b.isEquipped - a.isEquipped)
+    || (CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category))
+    || a.name.localeCompare(b.name);
+}
+
+function compareRows(items, L, diffOnly = false) {
+  const rows = [];
+  const section = (title) => rows.push({ section: title });
+  const row = (label, get, { highlight = true } = {}) => {
+    const cells = items.map((it) => {
+      const v = it.hidden ? { text: "?" } : get(it);
+      if (v == null) return { text: "—", na: true };
+      return { text: String(v.text ?? ""), num: v.num, has: !!v.has };
+    });
+    const diff = new Set(cells.map((c) => c.text)).size > 1;
+    if (highlight && diff) {
+      const nums = cells.filter((c) => !c.na && typeof c.num === "number");
+      if (nums.length > 1) {
+        const max = Math.max(...nums.map((c) => c.num));
+        const min = Math.min(...nums.map((c) => c.num));
+        if (max > min) nums.forEach((c) => { if (c.num === max) c.best = true; });
+      }
+    }
+    rows.push({ label, cells, diff });
+  };
+
+  const is = (cat) => (it) => it.category === cat;
+  const isWA = (it) => it.category === "weapon" || it.category === "armor";
+  const any = (fn) => items.some(fn);
+
+  section(L.sectionGeneral);
+  row(L.rowOwner, (it) => ({ text: it.ownerName }), { highlight: false });
+  row(L.rowType, (it) => ({ text: it.categoryLabel }), { highlight: false });
+  row(L.rowLevel, (it) => ({ text: String(it.raw.level), num: it.raw.level }), { highlight: false });
+  row(L.rowPrice, (it) => ({ text: it.price || "—" }), { highlight: false });
+
+  section(L.sectionFundamental);
+  if (any(isWA)) row(L.kind_potency, (it) => (isWA(it) ? { text: signed(it.raw.potency), num: it.raw.potency } : null));
+  if (any(is("weapon"))) row(L.kind_striking, (it) => (is("weapon")(it)
+    ? { text: it.raw.striking ? fundamentalName("weapon", "striking", it.raw.striking, L) : "—", num: it.raw.striking } : null));
+  if (any(is("armor"))) row(L.kind_resilient, (it) => (is("armor")(it)
+    ? { text: it.raw.resilient ? fundamentalName("armor", "resilient", it.raw.resilient, L) : "—", num: it.raw.resilient } : null));
+  if (any(is("shield"))) row(L.kind_reinforcing, (it) => (is("shield")(it)
+    ? { text: it.raw.reinforcing ? fundamentalName("shield", "reinforcing", it.raw.reinforcing, L) : "—", num: it.raw.reinforcing } : null));
+
+  section(L.sectionStats);
+  if (any(is("weapon"))) row(L.statDamage, (it) => (is("weapon")(it) ? { text: it.raw.damageText, num: it.raw.avgDamage } : null));
+  if (any(is("weapon"))) row(L.statAvgDamage, (it) => (is("weapon")(it) ? { text: it.raw.avgDamage.toFixed(1), num: it.raw.avgDamage } : null));
+  if (any(is("armor"))) row(L.statAC, (it) => (is("armor")(it) ? { text: signed(it.raw.ac), num: it.raw.ac } : null));
+  if (any(is("armor"))) row(L.statSaves, (it) => (is("armor")(it) ? { text: signed(it.raw.saves), num: it.raw.saves } : null));
+  if (any(is("shield"))) row(L.statHardness, (it) => (is("shield")(it) ? { text: String(it.raw.hardness), num: it.raw.hardness } : null));
+  if (any(is("shield"))) row(L.statHP, (it) => (is("shield")(it) ? { text: String(it.raw.hp), num: it.raw.hp } : null));
+  if (any(isWA)) row(L.statSlots, (it) => (isWA(it) ? { text: `${it.raw.used}/${it.raw.total}`, num: it.raw.total } : null));
+
+  const union = new Map();
+  for (const it of items) for (const p of it.properties) if (!union.has(p.slug)) union.set(p.slug, p.name);
+  if (union.size) {
+    section(L.sectionProperty);
+    for (const [slug, name] of union) {
+      row(name, (it) => {
+        if (!isWA(it) && !it.properties.length) return null;
+        const p = it.properties.find((x) => x.slug === slug);
+        if (!p) return { text: "—" };
+        const t = p.effect || "✓";
+        return p.inactive ? { text: `${t} (${L.inactive})` } : { text: t, has: true };
+      }, { highlight: false });
+    }
+  }
+
+  const acts = new Map();
+  for (const it of items) for (const a of it.activations) if (!acts.has(a.name)) acts.set(a.name, a);
+  if (acts.size) {
+    section(L.sectionActivations);
+    for (const [name] of acts) {
+      row(name, (it) => {
+        const a = it.activations.find((x) => x.name === name);
+        return a ? { text: `${a.glyph} ${a.typeLabel}`, has: true } : { text: "—" };
+      }, { highlight: false });
+    }
+  }
+
+  let out = diffOnly ? rows.filter((r) => r.section || r.diff) : rows;
+  out = out.filter((r, i) => !r.section || (out[i + 1] && !out[i + 1].section));
+  return out;
+}
+
+function buildView({ owners, state, L, catalog }) {
+  const all = new Map();
+  const counts = { all: 0, weapon: 0, armor: 0, shield: 0, gear: 0 };
+  const sorted = [];
+
+  for (const o of owners) {
+    const views = (o.items ?? []).map((it) => itemView(it, L, catalog, state)).sort(sortItems);
+    for (const v of views) {
+      all.set(v.key, v);
+      counts.all += 1;
+      counts[v.category] = (counts[v.category] ?? 0) + 1;
+    }
+    sorted.push({ ...o, items: views });
+  }
+
+  if (state.focusItem && all.has(state.focusItem)) {
+    state.filter = "all";
+    state.tab = "detail";
+    state.selectedKey = state.focusItem;
+    state.expandedRune = null;
+    state.focusActor = null;
+  }
+  state.focusItem = null;
+
+  if (state.focusActor) {
+    const owner = sorted.find((o) => o.id === state.focusActor);
+    if (owner?.items.length) {
+      state.filter = "all";
+      state.tab = "detail";
+      state.selectedKey = owner.items[0].key;
+    }
+    state.focusActor = null;
+  }
+
+  const ownersOut = sorted
+    .map((o) => ({ ...o, items: o.items.filter((v) => state.filter === "all" || v.category === state.filter) }))
+    .filter((o) => o.items.length);
+
+  state.compareKeys = (state.compareKeys ?? []).filter((k) => all.has(k));
+  const visibleKeys = ownersOut.flatMap((o) => o.items.map((i) => i.key));
+  if (!visibleKeys.includes(state.selectedKey)) state.selectedKey = visibleKeys[0] ?? null;
+
+  for (const v of all.values()) {
+    v.isSelected = v.key === state.selectedKey;
+    v.inCompare = state.compareKeys.includes(v.key);
+  }
+
+  const compare = state.compareKeys.map((k) => all.get(k));
+  const filters = [
+    ["all", "fa-layer-group", L.filterAll],
+    ["weapon", "fa-khanda", L.filterWeapon],
+    ["armor", "fa-vest", L.filterArmor],
+    ["shield", "fa-shield", L.filterShield],
+    ["gear", "fa-ring", L.filterGear]
+  ].map(([id, icon, label]) => ({ id, icon: `fa-solid ${icon}`, label, count: counts[id] ?? 0, active: state.filter === id }));
+
+  return {
+    labels: L,
+    state,
+    owners: ownersOut,
+    filters,
+    hasAny: counts.all > 0,
+    selected: all.get(state.selectedKey) ?? null,
+    isDetail: state.tab !== "compare",
+    isCompare: state.tab === "compare",
+    compare,
+    compareRows: compare.length ? compareRows(compare, L, state.diffOnly) : [],
+    compareCount: compare.length,
+    compareMax: COMPARE_MAX,
+    compareEmptyText: fmt(L.compareEmpty, { max: COMPARE_MAX }),
+    diffOnly: !!state.diffOnly
+  };
+}
+
+/** DOM helpers shared by the module and the standalone preview. */
+
+function applySearch(root, query) {
+  const q = String(query ?? "").trim().toLowerCase();
+  let anyVisible = false;
+  for (const owner of root.querySelectorAll(".at-owner")) {
+    let any = false;
+    for (const el of owner.querySelectorAll(".at-item")) {
+      const hit = !q || (el.dataset.search ?? "").includes(q);
+      el.hidden = !hit;
+      any ||= hit;
+    }
+    owner.hidden = !any;
+    anyVisible ||= any;
+  }
+  const empty = root.querySelector(".at-search-empty");
+  if (empty) empty.hidden = !q || anyVisible;
+}
+
+function bindSearch(root, state) {
+  const input = root.querySelector(".at-search");
+  if (!input) return;
+  input.value = state.search ?? "";
+  applySearch(root, input.value);
+  input.addEventListener("input", () => {
+    state.search = input.value;
+    applySearch(root, input.value);
+  });
+  input.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape" && input.value) {
+      ev.stopPropagation();
+      input.value = "";
+      state.search = "";
+      applySearch(root, "");
+    }
+  });
+}
+
+// Preview runtime: mock data + AppV2-style action delegation. Model/dom code is inlined above by the build.
+
+const svgIcon = (glyph, a, b) => "data:image/svg+xml;utf8," + encodeURIComponent(
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="64" height="64" fill="url(#g)"/><text x="32" y="43" font-size="30" text-anchor="middle" fill="#e8dcc4" font-family="serif">${glyph}</text></svg>`);
+const IMG = {
+  sword: svgIcon("⚔", "#5a3a2a", "#2a1d17"), bow: svgIcon("➶", "#3e4a2c", "#1e2416"),
+  hammer: svgIcon("⚒", "#4a3c30", "#211a15"), rapier: svgIcon("†", "#55302a", "#24150f"),
+  dagger: svgIcon("?", "#333", "#151515"), plate: svgIcon("⛨", "#4b4a52", "#1f1e24"),
+  leather: svgIcon("❖", "#5b4632", "#271d14"), breast: svgIcon("⛊", "#46423a", "#1d1b17"),
+  shield: svgIcon("⛉", "#4a3728", "#1f1610"), tower: svgIcon("▮", "#3d3a33", "#191814"),
+  cloak: svgIcon("❦", "#6a2d22", "#2b1310"), ring: svgIcon("◎", "#4a4430", "#1f1c12"),
+  boots: svgIcon("❧", "#3b3424", "#18150e"), amulet: svgIcon("✶", "#2f3f4a", "#12191e"),
+  pc1: svgIcon("S", "#7a3a28", "#3a1a12"), pc2: svgIcon("B", "#4d5a34", "#22291a"), pc3: svgIcon("N", "#3e3a5a", "#1b1a29")
+};
+
+// Gear descriptions use the same HTML layout as PF2e item data, so the real parser runs on them.
+const DESCRIPTIONS = {
+  cloak: `<p>Soot-dark wool that never quite stops smoldering.</p><hr /><p><strong>Activate—Ember Ward</strong> <span class="action-glyph">R</span> (concentrate)</p><p><strong>Frequency</strong> once per day</p><p><strong>Trigger</strong> You would take fire damage</p><hr /><p><strong>Effect</strong> The cloak drinks the flames. You gain <strong>resistance 10 to fire</strong> against the triggering damage.</p>`,
+  ring: `<p>A plain band etched with a single sidestep.</p><p><strong>Activate</strong> <span class="action-glyph">R</span> command; <strong>Frequency</strong> once per hour; <strong>Trigger</strong> An enemy you can see hits you with a melee Strike; <strong>Effect</strong> You Step, and the attacker takes a –2 circumstance penalty to its next attack against you.</p>`,
+  boots: `<p>Light boots with springs of woven silver.</p><hr /><p><strong>Activate—Bound</strong> <span class="action-glyph">1</span> (manipulate)</p><p><strong>Effect</strong> You Leap up to 20 feet, ignoring difficult terrain on the landing square.</p><p><strong>Activate—Skyward Stride</strong> <span class="action-glyph">2</span> (concentrate, manipulate)</p><p><strong>Frequency</strong> once per day</p><p><strong>Effect</strong> For 1 minute, you can walk on air as if it were solid ground.</p>`,
+  amulet: `<p>A star-shaped amulet humming with quiet power.</p><hr /><p><strong>Activate—Steady Mind</strong> <span class="action-glyph">F</span> (concentrate)</p><p><strong>Requirements</strong> You are frightened</p><p><strong>Effect</strong> Reduce your frightened value by 1.</p>`
+};
+
+const item = (o) => {
+  const it = { priceGp: 0, carry: "carried", hidden: false, canOpen: true, canEdit: true, invested: null, base: {}, granted: {}, ...o,
+    runes: { potency: 0, striking: 0, resilient: 0, reinforcing: 0, property: [], ...o.runes } };
+  it.activations = it.hidden ? [] : parseActivations(o.description ?? "");
+  return it;
+};
+
+const OWNERS = [
+  { id: "a1", name: "Seraphine Vale", img: IMG.pc1, isOwn: true, items: [
+    item({ key: "a1.i1", actorId: "a1", itemId: "i1", ownerName: "Seraphine Vale", name: "Longsword", img: IMG.sword, category: "weapon", level: 12, price: "1,365 gp", carry: "equipped",
+      runes: { potency: 2, striking: 2, property: ["flaming", "frost"] }, base: { dice: 1, die: "d8", damageTypeLabel: "slashing" } }),
+    item({ key: "a1.i2", actorId: "a1", itemId: "i2", ownerName: "Seraphine Vale", name: "Composite Shortbow", img: IMG.bow, category: "weapon", level: 8, price: "535 gp",
+      runes: { potency: 1, striking: 1, property: ["shock"] }, base: { dice: 1, die: "d6", damageTypeLabel: "piercing" } }),
+    item({ key: "a1.i3", actorId: "a1", itemId: "i3", ownerName: "Seraphine Vale", name: "Full Plate", img: IMG.plate, category: "armor", level: 8, price: "520 gp", carry: "equipped",
+      runes: { potency: 1, resilient: 1, property: ["slick"] }, base: { acBonus: 6 } }),
+    item({ key: "a1.i4", actorId: "a1", itemId: "i4", ownerName: "Seraphine Vale", name: "Steel Shield", img: IMG.shield, category: "shield", level: 7, price: "302 gp", carry: "equipped",
+      runes: { reinforcing: 2 }, base: { acBonus: 2, hardness: 8, maxHp: 64 } }),
+    item({ key: "a1.i5", actorId: "a1", itemId: "i5", ownerName: "Seraphine Vale", name: "Cloak of Smoldering Ash", img: IMG.cloak, category: "gear", level: 9, price: "650 gp", carry: "equipped", invested: true, description: DESCRIPTIONS.cloak }),
+    item({ key: "a1.i6", actorId: "a1", itemId: "i6", ownerName: "Seraphine Vale", name: "Bounding Boots", img: IMG.boots, category: "gear", level: 7, price: "340 gp", carry: "equipped", invested: false, description: DESCRIPTIONS.boots })
+  ]},
+  { id: "a2", name: "Bram Ashguard", img: IMG.pc2, isOwn: false, items: [
+    item({ key: "a2.i1", actorId: "a2", itemId: "i1", ownerName: "Bram Ashguard", canEdit: false, name: "Warhammer", img: IMG.hammer, category: "weapon", level: 11, price: "1,035 gp", carry: "equipped",
+      runes: { potency: 1, striking: 1, property: ["holy"] }, base: { dice: 1, die: "d8", damageTypeLabel: "bludgeoning" } }),
+    item({ key: "a2.i2", actorId: "a2", itemId: "i2", ownerName: "Bram Ashguard", canEdit: false, name: "Breastplate", img: IMG.breast, category: "armor", level: 14, price: "1,560 gp", carry: "equipped",
+      runes: { potency: 2, resilient: 2, property: ["fortification"] }, base: { acBonus: 4 } }),
+    item({ key: "a2.i3", actorId: "a2", itemId: "i3", ownerName: "Bram Ashguard", canEdit: false, name: "Tower Shield", img: IMG.tower, category: "shield", level: 10, price: "900 gp", carry: "carried",
+      runes: { reinforcing: 3 }, base: { acBonus: 2, hardness: 10, maxHp: 80 } }),
+    item({ key: "a2.i4", actorId: "a2", itemId: "i4", ownerName: "Bram Ashguard", canEdit: false, name: "Starlit Amulet", img: IMG.amulet, category: "gear", level: 6, price: "250 gp", carry: "equipped", invested: true, canEdit: false, description: DESCRIPTIONS.amulet })
+  ]},
+  { id: "a3", name: "Nym", img: IMG.pc3, isOwn: false, items: [
+    item({ key: "a3.i1", actorId: "a3", itemId: "i1", ownerName: "Nym", canEdit: false, name: "Rapier", img: IMG.rapier, category: "weapon", level: 8, price: "625 gp", carry: "equipped",
+      runes: { potency: 1, striking: 1, property: ["wounding", "corrosive"] }, base: { dice: 1, die: "d6", damageTypeLabel: "piercing" } }),
+    item({ key: "a3.i2", actorId: "a3", itemId: "i2", ownerName: "Nym", canEdit: false, name: "Studded Leather", img: IMG.leather, category: "armor", level: 5, price: "160 gp", carry: "equipped",
+      runes: { potency: 1 }, base: { acBonus: 2 } }),
+    item({ key: "a3.i4", actorId: "a3", itemId: "i4", ownerName: "Nym", canEdit: false, name: "Ring of the Sidestep", img: IMG.ring, category: "gear", level: 5, price: "160 gp", carry: "equipped", invested: true, canEdit: false, granted: { 0: "x" }, description: DESCRIPTIONS.ring }),
+    item({ key: "a3.i3", actorId: "a3", itemId: "i3", ownerName: "Nym", canEdit: false, name: "Unusual Dagger", img: IMG.dagger, category: "weapon", level: 0, price: "", carry: "stowed", hidden: true,
+      runes: { potency: 2, property: ["vorpal"] }, base: { dice: 1, die: "d4" } })
+  ]}
+];
+
+const dmg = (diceNumber, dieSize, damageType, conditional = false) => ({ diceNumber, dieSize, damageType, typeLabel: damageType, conditional });
+const PROPERTY = {
+  flaming: { label: "Flaming", level: 8, damage: [dmg(1, "d6", "fire")] },
+  frost: { label: "Frost", level: 8, damage: [dmg(1, "d6", "cold")] },
+  shock: { label: "Shock", level: 8, damage: [dmg(1, "d6", "electricity")] },
+  corrosive: { label: "Corrosive", level: 8, damage: [dmg(1, "d6", "acid")] },
+  wounding: { label: "Wounding", level: 7, damage: [dmg(1, "d6", "bleed")] },
+  holy: { label: "Holy", level: 11, rarity: "uncommon", damage: [dmg(1, "d4", "spirit", true)] },
+  slick: { label: "Slick", level: 5, effect: "+1 Acrobatics to Escape and Squeeze" },
+  fortification: { label: "Fortification", level: 12, effect: "Flat check DC 17 negates crits" }
+};
+const FUND = {
+  weapon: { potency: { 1: 2, 2: 10, 3: 16, 4: 16 }, striking: { 1: 4, 2: 12, 3: 19 } },
+  armor: { potency: { 1: 5, 2: 11, 3: 18 }, resilient: { 1: 8, 2: 14, 3: 20 } },
+  shield: { reinforcing: { 1: 4, 2: 7, 3: 10, 4: 13, 5: 16, 6: 19 } }
+};
+const DESC = {
+  "weapon:property:flaming": "<p>The weapon is wreathed in fire. It deals an extra <strong>1d6 fire damage</strong> on a successful Strike, plus persistent fire damage on a critical hit.</p>",
+  "weapon:property:frost": "<p>Rime coats the weapon. It deals an extra <strong>1d6 cold damage</strong>; a critical hit also leaves the target slowed by the cold.</p>",
+  "weapon:striking:2": "<p>A greater striking rune lets the weapon deal <strong>three weapon damage dice</strong> instead of one.</p>",
+  "weapon:potency:2": "<p>Grants a <strong>+2 item bonus</strong> to attack rolls and lets the weapon hold up to two property runes.</p>"
+};
+
+const catalog = {
+  property: (category, slug) => PROPERTY[slug] ?? null,
+  fundamental: (category, kind, n) => ({ level: FUND[category]?.[kind]?.[n] }),
+  describe: (key) => new Promise((r) => setTimeout(() => r(DESC[key] ?? null), 450))
+};
+
+const L = LANG.ATTUNE.UI;
+const template = Handlebars.compile(document.getElementById("at-template").innerHTML);
+const content = document.getElementById("at-content");
+const state = initialState();
+
+function findItem(key) {
+  for (const o of OWNERS) for (const it of o.items) if (it.key === key) return it;
+  return null;
+}
+function activationHtml(descKey) {
+  const [key, index] = descKey.slice(4).split("#");
+  return findItem(key)?.activations.find((a) => a.index === Number(index))?.html ?? null;
+}
+
+function toast(msg) {
+  const t = document.getElementById("at-toast");
+  t.textContent = msg;
+  t.classList.add("is-on");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove("is-on"), 2400);
+}
+
+function render() {
+  const keep = [...content.querySelectorAll(".at-rail-list, .at-pane")].map((el) => el.scrollTop);
+  content.innerHTML = template(buildView({ owners: OWNERS, state, L, catalog }));
+  content.querySelectorAll(".at-rail-list, .at-pane").forEach((el, i) => { el.scrollTop = keep[i] ?? 0; });
+  content.querySelectorAll("[data-tooltip]").forEach((el) => { el.title = el.dataset.tooltip; });
+  bindSearch(content, state);
+}
+
+const actions = {
+  select: (t) => { state.selectedKey = t.dataset.key; state.expandedRune = null; state.tab = "detail"; },
+  toggleCompare: (t) => { if (toggleCompareKey(state, t.dataset.key) === "full") toast(fmt(L.compareFull, { max: COMPARE_MAX })); },
+  clearCompare: () => { state.compareKeys = []; },
+  setTab: (t) => { state.tab = t.dataset.tab; },
+  setFilter: (t) => { state.filter = t.dataset.filter; },
+  toggleDiff: () => { state.diffOnly = !state.diffOnly; },
+  openSheet: () => toast("In Foundry this opens the item sheet."),
+  toggleActivation: (t) => {
+    const it = findItem(t.dataset.key);
+    const i = Number(t.dataset.index);
+    const act = it.activations.find((a) => a.index === i);
+    if (it.granted[i]) { delete it.granted[i]; toast(fmt(L.removedNotice, { name: act.name || it.name, actor: it.ownerName })); }
+    else { it.granted[i] = "mock"; toast(fmt(L.addedNotice, { name: act.name || it.name, actor: it.ownerName })); }
+  },
+  addAll: (t) => {
+    const it = findItem(t.dataset.key);
+    let n = 0;
+    for (const a of it.activations) if (!it.granted[a.index]) { it.granted[a.index] = "mock"; n += 1; }
+    toast(fmt(L.addedAllNotice, { n, actor: it.ownerName }));
+  },
+  toggleRune: async (t) => {
+    const key = t.dataset.rune;
+    state.expandedRune = state.expandedRune === key ? null : key;
+    if (state.expandedRune && !state.descriptions[key]) {
+      state.descriptions[key] = { loading: true };
+      render();
+      const html = key.startsWith("act:") ? activationHtml(key) : await catalog.describe(key);
+      state.descriptions[key] = { loading: false, html: html ?? "" };
+    }
+  }
+};
+
+content.addEventListener("click", async (ev) => {
+  const target = ev.target.closest("[data-action]");
+  if (!target || !content.contains(target)) return;
+  const fn = actions[target.dataset.action];
+  if (!fn) return;
+  ev.preventDefault();
+  await fn(target);
+  render();
+});
+
+render();
+
+</script>
+</body>
+</html>
