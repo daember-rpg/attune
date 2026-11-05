@@ -9,13 +9,13 @@ See what your Pathfinder 2e gear does. Compare runes side by side and add item a
 - **Rune browser.** Every weapon, armor and shield on your characters, with fundamental runes (potency, striking, resilient, reinforcing), property runes, free slots and the effective numbers they add up to.
 - **Rune descriptions.** Click any rune to read its full text, pulled from the PF2e equipment compendium (and the world's own compendiums, so homebrew runes work too).
 - **Compare.** Pick up to three items and see them side by side. The best value in each row is highlighted, and "Only differences" hides what is equal.
-- **Party view.** Optionally browse other party members' gear (world setting).
+- **Party view.** Each player sees only their own characters' gear. The GM can let players browse the rest of the party (world setting, off by default).
 - **Rules-aware.** Property runes beyond what the potency rune allows are flagged as inactive. Unidentified items stay a mystery to players.
 
 ## Opening it
 
 - Token controls: the gem button.
-- Character sheet header: **Attune** (jumps to that character). With **Triad** 0.8.0+ installed, this button moves into the Triad tray's utility bar instead (gem icon, next to the sheet button) and leaves the sheet.
+- Character sheet header: **Attune** (jumps to that character). With **Triad** installed, this button moves into the Triad tray's utility bar instead (gem icon, next to the sheet button) and leaves the sheet.
 - Character sheet inventory: a small icon next to items with runes or activations (red when there is something new to add).
 - Keybinding: `Shift + R` (configurable).
 

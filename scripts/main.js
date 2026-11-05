@@ -6,13 +6,15 @@ import { cleanupForItem, grantedFor } from "./grants.js";
 const ICON = "fa-solid fa-gem";
 
 Hooks.once("init", () => {
-  game.settings.register(MODULE_ID, "showParty", {
+  // A new key rather than a new default on "showParty": worlds that once saved the settings form
+  // stored "true" there, which would keep revealing other players' gear.
+  game.settings.register(MODULE_ID, "allowParty", {
     name: "ATTUNE.Settings.ShowParty.Name",
     hint: "ATTUNE.Settings.ShowParty.Hint",
     scope: "world",
     config: true,
     type: Boolean,
-    default: true,
+    default: false,
     onChange: () => refreshAttune()
   });
 
@@ -67,8 +69,36 @@ Hooks.on("triad.ready", (api) => {
   });
 });
 
-/** True once Triad hosts the button, so the sheet does not show a second one. */
-const inTriad = () => game.triad?.api?.hasTool?.(MODULE_ID) === true;
+const triadHasToolApi = () => typeof game.triad?.api?.registerTool === "function";
+
+// Triad versions before 0.8.0 have no registerTool: put the button into their utility bar directly.
+Hooks.on("renderTriadTray", (app, html) => {
+  if (triadHasToolApi()) return;
+  const root = html instanceof HTMLElement ? html : html?.[0] ?? app.element;
+  const footer = root?.querySelector(".triad-utility");
+  if (!footer || footer.querySelector(".attune-triad-button")) return;
+  const actor = app.actor;
+  if (actor?.type !== "character") return;
+
+  const label = game.i18n.localize("ATTUNE.Open");
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "triad-utility__button attune-triad-button";
+  button.dataset.tooltip = label;
+  button.setAttribute("aria-label", label);
+  button.innerHTML = `<i class="${ICON}" inert></i>`;
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    openAttune({ actorId: actor.id });
+  });
+  const sheetButton = footer.querySelector('[data-action="openActor"]');
+  if (sheetButton) sheetButton.before(button);
+  else footer.append(button);
+});
+
+/** True when Triad hosts the button (any version), so the sheet does not show a second one. */
+const inTriad = () => game.triad?.api?.hasTool?.(MODULE_ID) === true || (!!game.triad?.tray && !triadHasToolApi());
 
 // Token controls (left toolbar)
 Hooks.on("getSceneControlButtons", (controls) => {

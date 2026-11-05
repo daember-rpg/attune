@@ -13,7 +13,7 @@ export function collectOwners() {
   const ownIds = new Set(own.map((a) => a.id));
 
   let party = [];
-  if (!user.isGM && game.settings.get(MODULE_ID, "showParty")) {
+  if (!user.isGM && game.settings.get(MODULE_ID, "allowParty")) {
     const members = game.actors.party?.members ?? chars.filter((a) => a.hasPlayerOwner);
     party = members.filter((a) => a?.type === "character" && !ownIds.has(a.id) && a.testUserPermission(user, "LIMITED"));
   }

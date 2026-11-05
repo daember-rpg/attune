@@ -7,8 +7,8 @@
     "KeybindHint": "Open or close the Attune window.",
     "Settings": {
       "ShowParty": {
-        "Name": "Allow viewing party members' gear",
-        "Hint": "Players see only their own characters by default and can reveal the rest of the party with a toggle in the window. Turn this off to hide other characters' gear entirely."
+        "Name": "Let players see party members' gear",
+        "Hint": "Off by default: each player sees only their own characters' equipment. Turn this on to let players reveal the rest of the party with a toggle in the window. The GM always sees every character."
       },
       "SheetBadges": {
         "Name": "Inventory badges",
