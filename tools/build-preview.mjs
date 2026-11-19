@@ -25,15 +25,18 @@ body {
   background: radial-gradient(1200px 700px at 30% 20%, #3a3f33, #1d211a 60%, #111310);
   display: grid; place-items: center; font-family: "Spectral", serif;
 }
-.pv-window { width: min(940px, calc(100vw - 32px)); height: min(640px, calc(100vh - 64px)); display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
-.pv-window .window-header { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 12px; font-size: 14px; }
+.pv-window { position: relative; width: min(960px, calc(100vw - 32px)); height: min(660px, calc(100vh - 80px)); margin-bottom: 24px; display: flex; flex-direction: column; }
+/* Outside Foundry the PF2e action font is missing: draw the glyph from its Unicode fallback. */
+.pv-window .action-glyph { font-size: 0 !important; }
+.pv-window .action-glyph::after { content: attr(data-fallback); font-family: "Spectral", serif; font-size: 15px; letter-spacing: -1px; }
+.pv-window .window-header { display: flex; align-items: center; gap: 10px; }
 .pv-window .window-header .title { flex: 1; }
 .pv-window .window-header .fa-xmark { opacity: .6; }
 .pv-window .window-content { flex: 1; min-height: 0; }
 #at-toast { position: fixed; top: 18px; left: 50%; transform: translate(-50%, -20px); opacity: 0; transition: .2s; background: #2c2621; color: #e8dcc4;
   border: 1px solid #cf4a32; padding: 8px 16px; border-radius: 6px; font-family: "Spectral", serif; pointer-events: none; }
 #at-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
-.pv-note { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; color: rgba(232,220,196,.4); font: italic 12px "Spectral", serif; }
+.pv-note { position: fixed; bottom: 8px; left: 0; right: 0; text-align: center; color: rgba(232,220,196,.4); font: italic 12px "Spectral", serif; }
 ${css}
 </style>
 </head>

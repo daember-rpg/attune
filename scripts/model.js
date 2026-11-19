@@ -226,6 +226,7 @@ export function itemView(item, L, catalog, state) {
       itemKey: item.key,
       name: a.name || item.name,
       glyph: glyphText(a.actionType, a.actions),
+      glyphCode: a.actionType === "reaction" ? "R" : a.actionType === "free" ? "F" : String(Math.max(1, Math.min(3, Number(a.actions) || 1))),
       actionType: a.actionType,
       typeLabel: a.actionType === "action" ? fmt(a.actions > 1 ? L.actionsN : L.actionOne, { n: a.actions || 1 }) : (L[`type_${a.actionType}`] ?? humanize(a.actionType)),
       traitsText: (a.traits ?? []).map(humanize).join(", "),

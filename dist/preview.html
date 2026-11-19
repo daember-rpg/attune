@@ -13,795 +13,417 @@ body {
   background: radial-gradient(1200px 700px at 30% 20%, #3a3f33, #1d211a 60%, #111310);
   display: grid; place-items: center; font-family: "Spectral", serif;
 }
-.pv-window { width: min(940px, calc(100vw - 32px)); height: min(640px, calc(100vh - 64px)); display: flex; flex-direction: column; border-radius: 8px; overflow: hidden; }
-.pv-window .window-header { display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 12px; font-size: 14px; }
+.pv-window { position: relative; width: min(960px, calc(100vw - 32px)); height: min(660px, calc(100vh - 80px)); margin-bottom: 24px; display: flex; flex-direction: column; }
+/* Outside Foundry the PF2e action font is missing: draw the glyph from its Unicode fallback. */
+.pv-window .action-glyph { font-size: 0 !important; }
+.pv-window .action-glyph::after { content: attr(data-fallback); font-family: "Spectral", serif; font-size: 15px; letter-spacing: -1px; }
+.pv-window .window-header { display: flex; align-items: center; gap: 10px; }
 .pv-window .window-header .title { flex: 1; }
 .pv-window .window-header .fa-xmark { opacity: .6; }
 .pv-window .window-content { flex: 1; min-height: 0; }
 #at-toast { position: fixed; top: 18px; left: 50%; transform: translate(-50%, -20px); opacity: 0; transition: .2s; background: #2c2621; color: #e8dcc4;
   border: 1px solid #cf4a32; padding: 8px 16px; border-radius: 6px; font-family: "Spectral", serif; pointer-events: none; }
 #at-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
-.pv-note { position: fixed; bottom: 10px; left: 0; right: 0; text-align: center; color: rgba(232,220,196,.4); font: italic 12px "Spectral", serif; }
+.pv-note { position: fixed; bottom: 8px; left: 0; right: 0; text-align: center; color: rgba(232,220,196,.4); font: italic 12px "Spectral", serif; }
 
 
-/* ============ Embermark tokens, Kronos dialect ============
-   Smoked glass, parchment ink, gold for what is selected or active, ember for danger. */
+/* ==========================================================================
+   Attune — Embermark tokens in the Triad 0.9 dialect: smoked glass, parchment
+   ink, a gold thread for what matters now, moss for done, ember for danger.
+   Token values mirror Triad's --tr-* so both read as one family.
+   ========================================================================== */
+
 .attune {
+  /* Surfaces */
   --at-glass: rgba(20, 17, 15, 0.9);
-  --at-deep: rgba(0, 0, 0, 0.22);
+  --at-glass-deep: rgba(12, 10, 9, 0.72);
+  --at-well: rgba(0, 0, 0, 0.28);
   --at-fill: rgba(255, 255, 255, 0.035);
   --at-fill-2: rgba(255, 255, 255, 0.065);
   --at-fill-3: rgba(255, 255, 255, 0.11);
-  --at-line: rgba(255, 255, 255, 0.08);
-  --at-line-2: rgba(255, 255, 255, 0.14);
-  --at-parch: #efe3c8;
-  --at-parch-2: rgba(239, 227, 200, 0.64);
-  --at-parch-3: rgba(239, 227, 200, 0.38);
+  --at-hair: rgba(255, 255, 255, 0.08);
+  --at-hair-2: rgba(255, 255, 255, 0.14);
+
+  /* Ink */
+  --at-ink: #efe3c8;
+  --at-ink-dim: rgba(239, 227, 200, 0.62);
+  --at-ink-faint: rgba(239, 227, 200, 0.36);
+  --at-on-gold: #1c1712;
+
+  /* Accents */
   --at-gold: #d4b25a;
   --at-gold-light: #ecd28a;
   --at-gold-soft: rgba(212, 178, 90, 0.15);
   --at-gold-line: rgba(212, 178, 90, 0.45);
-  --at-on-gold: #1c1712;
-  --at-moss: #a3b571;
-  --at-moss-soft: rgba(138, 154, 91, 0.18);
-  --at-moss-line: rgba(138, 154, 91, 0.5);
+  --at-gold-fill: linear-gradient(180deg, #e0c070, #c9a24a);
+  --at-gold-fill-hover: linear-gradient(180deg, #ebcd80, #d4ad55);
   --at-ember: #c8553d;
   --at-ember-light: #e07a5f;
-  --at-ember-soft: rgba(200, 85, 61, 0.18);
-  --at-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
-  --at-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  --at-head: "Cinzel", "Signika", serif;
-  --at-body: "Spectral", Georgia, serif;
-  --at-radius: 12px;
+  --at-ember-soft: rgba(200, 85, 61, 0.2);
+  --at-ember-line: rgba(200, 85, 61, 0.55);
+  --at-moss: #8a9a5b;
+  --at-moss-light: #b4c47f;
+  --at-moss-soft: rgba(138, 154, 91, 0.2);
+  --at-moss-line: rgba(138, 154, 91, 0.55);
 
-  /* Legacy names, mapped to the new palette. */
-  --at-char: #14110f;
-  --at-clay: var(--at-gold);
-  --at-clay-soft: var(--at-gold-soft);
+  --at-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+  --at-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --at-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --at-display: "Cinzel", "Palatino Linotype", serif;
+  --at-body: "Spectral", "Georgia", serif;
+
+  /* 8pt spacing scale */
+  --sp-1: 8px;
+  --sp-2: 16px;
+  --sp-3: 24px;
+  --sp-4: 32px;
 }
 
-/* ============ Window shell ============ */
+/* ==========================================================================
+   Window shell
+   ========================================================================== */
+
 .application.attune {
-  min-width: 640px;
-  min-height: 420px;
-  border-radius: 16px;
-  background: var(--at-glass);
+  min-width: 680px;
+  min-height: 440px;
+  border-radius: 18px;
+  background:
+    radial-gradient(90% 260px at 0 0, rgba(212, 178, 90, 0.07), transparent 70%),
+    var(--at-glass);
   backdrop-filter: blur(12px) saturate(120%);
-  border: 1px solid var(--at-line);
+  border: 1px solid var(--at-hair);
   box-shadow: var(--at-highlight), 0 24px 60px rgba(0, 0, 0, 0.55);
   overflow: hidden;
 }
-/* The gold thread along the top, as on the Kronos bar. */
+
+/* The gold thread: Kronos runs it along its bar, the tray along its edge, Attune along the top. */
 .application.attune::before {
   content: "";
   position: absolute;
   top: 0;
-  left: 15%;
-  right: 15%;
+  left: 12%;
+  right: 12%;
   height: 1px;
-  z-index: 2;
-  background: linear-gradient(90deg, transparent, var(--at-gold-line), transparent);
+  z-index: 3;
+  background: linear-gradient(90deg, transparent, var(--at-gold-line) 30%, rgba(212, 178, 90, 0.2) 70%, transparent);
   pointer-events: none;
 }
+
 .application.attune .window-header {
+  height: 40px;
+  padding: 0 var(--sp-2);
   background: transparent;
-  border-bottom: 1px solid var(--at-line);
-  color: var(--at-parch);
-  font-family: var(--at-head);
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  border-bottom: 1px solid var(--at-hair);
+  color: var(--at-ink);
+  font-family: var(--at-display);
   font-size: 12px;
-}
-.application.attune .window-header .window-icon { color: var(--at-gold); filter: drop-shadow(0 0 6px rgba(212, 178, 90, 0.45)); }
-.application.attune .window-content {
-  padding: 0;
-  background: transparent;
-  color: var(--at-parch);
-  overflow: hidden;
-}
-
-/* Neutralize core button/input chrome inside the app */
-.attune .at-root button {
-  background: none;
-  border: none;
-  box-shadow: none;
-  margin: 0;
-  padding: 0;
-  width: auto;
-  height: auto;
-  min-height: 0;
-  line-height: inherit;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  text-align: inherit;
-  -webkit-tap-highlight-color: transparent;
-}
-.attune .at-root button:focus-visible { outline: 1px solid var(--at-gold); outline-offset: 2px; }
-.attune .at-root button:disabled { cursor: default; }
-.attune [hidden] { display: none !important; }
-
-.attune .at-root {
-  display: grid;
-  grid-template-columns: minmax(250px, 300px) 1fr;
-  height: 100%;
-  font-family: var(--at-body);
-  font-size: 14px;
-  color: var(--at-parch);
-  font-variant-numeric: lining-nums;
-}
-
-/* ============ Rail ============ */
-.attune .at-rail {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  background: var(--at-deep);
-  border-right: 1px solid var(--at-line);
-}
-.attune .at-rail-head {
-  padding: 16px 12px 12px;
-  display: grid;
-  gap: 8px;
-}
-.attune .at-search-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 14px;
-  height: 36px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.3);
-  box-shadow: inset 0 0 0 1px var(--at-line);
-  color: var(--at-parch-3);
-  font-size: 12px;
-  transition: box-shadow 0.2s ease, color 0.15s ease;
-}
-.attune .at-search-wrap:focus-within { box-shadow: inset 0 0 0 1px var(--at-gold-line), 0 0 0 3px var(--at-gold-soft); color: var(--at-gold); }
-.attune .at-search {
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  padding: 0;
-  color: var(--at-parch);
-  font-family: var(--at-body);
-  font-size: 14px;
-  outline: none;
-}
-.attune .at-search::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
-.attune .at-search::placeholder { color: var(--at-parch-3); font-style: italic; }
-
-/* Filters: one segmented pill. */
-.attune .at-filters {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 2px;
-  padding: 3px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.3);
-  box-shadow: inset 0 0 0 1px var(--at-line);
-}
-.attune .at-root .at-filter {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 28px;
-  border-radius: 999px;
-  color: var(--at-parch-3);
-  font-family: var(--at-body);
-  font-size: 12.5px;
-  font-variant-numeric: tabular-nums lining-nums;
-  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
-}
-.attune .at-root .at-filter i { font-size: 11px; }
-.attune .at-root .at-filter:hover { background: var(--at-fill-3); color: var(--at-parch); }
-.attune .at-root .at-filter:active { transform: scale(0.94); }
-.attune .at-root .at-filter.is-active {
-  background: linear-gradient(180deg, #e0c070, #c9a24a);
-  color: var(--at-on-gold);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
-}
-
-.attune .at-rail-list { flex: 1; min-height: 0; overflow-y: auto; padding: 0 8px 16px; scrollbar-width: thin; scrollbar-color: rgba(212, 178, 90, 0.3) transparent; }
-.attune .at-owner + .at-owner { margin-top: 8px; }
-.attune .at-owner-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 8px 8px;
-  font-family: var(--at-head);
-  font-size: 10.5px;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+}
+
+.application.attune .window-header .window-icon {
   color: var(--at-gold);
+  filter: drop-shadow(0 0 6px rgba(212, 178, 90, 0.45));
 }
-.attune .at-owner-head img {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: none;
-  box-shadow: 0 0 0 1px var(--at-line-2);
-}
-.attune .at-owner-name { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.attune .at-owner-head::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(212, 178, 90, 0.3), transparent); }
-.attune .at-tag {
-  order: 2;
-  font-family: var(--at-body);
-  font-size: 11px;
-  font-weight: 500;
-  padding: 1px 8px;
-  border-radius: 999px;
-  background: var(--at-moss-soft);
-  color: var(--at-moss);
-  letter-spacing: 0;
-  text-transform: none;
-}
-.attune .at-owner-head::after { order: 3; }
 
-.attune .at-item {
-  position: relative;
-  display: grid;
-  grid-template-columns: 36px 1fr 28px;
+.application.attune .window-header button.header-control {
+  color: var(--at-ink-faint);
+  border-radius: 50%;
+}
+
+.application.attune .window-header button.header-control:hover {
+  color: var(--at-ink);
+  background: var(--at-fill-3);
+}
+
+.application.attune .window-content {
+  padding: 0;
+  background: transparent;
+  color: var(--at-ink);
+  overflow: hidden;
+}
+
+.attune .at-root,
+.attune .at-root *,
+.attune .at-root *::before,
+.attune .at-root *::after {
+  box-sizing: border-box;
+}
+
+/* Neutralize Foundry's global button styling. :where() keeps specificity at zero. */
+:where(.attune .at-root) button {
+  all: unset;
+  box-sizing: border-box;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 6px 6px 6px;
-  border-radius: var(--at-radius);
+  justify-content: center;
+  font-family: inherit;
+  color: inherit;
   cursor: pointer;
-  transition: background-color 0.15s ease, box-shadow 0.2s ease;
+  line-height: 1;
+  margin: 0;
+  -webkit-tap-highlight-color: transparent;
 }
-.attune .at-item:hover { background: var(--at-fill-2); }
-.attune .at-item.is-selected {
-  background: var(--at-gold-soft);
-  box-shadow: inset 0 0 0 1px var(--at-gold-line);
+
+:where(.attune .at-root) button:focus-visible,
+:where(.attune .at-root) [role="button"]:focus-visible {
+  outline: 1px solid var(--at-gold);
+  outline-offset: 2px;
 }
-.attune .at-item-img {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  object-fit: cover;
-  background: var(--at-fill-2);
-  border: none;
-  box-shadow: 0 0 0 1px var(--at-line-2), 0 2px 6px rgba(0, 0, 0, 0.35);
+
+:where(.attune .at-root) button:disabled {
+  cursor: default;
+  opacity: 0.5;
 }
-.attune .at-item-text { min-width: 0; display: grid; gap: 2px; }
-.attune .at-item-name {
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+
+.attune [hidden] { display: none !important; }
+
+.attune .action-glyph {
+  font-family: "Pathfinder2eActions", var(--at-body);
+  font-weight: normal;
 }
-.attune .at-item.is-selected .at-item-name { color: var(--at-gold-light); }
-.attune .at-eq { font-size: 9px; color: var(--at-moss); margin-right: 6px; vertical-align: 1px; }
-.attune .at-item-sum {
-  font-size: 12px;
-  line-height: 1.2;
-  color: var(--at-parch-3);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.attune .at-item-sum.is-hidden { font-style: italic; }
-.attune .at-root .at-cmp-toggle {
-  width: 28px;
-  height: 28px;
+
+.attune .at-root {
   display: grid;
-  place-items: center;
-  border-radius: 50%;
-  color: var(--at-parch-3);
-  font-size: 10px;
-  opacity: 0;
-  transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+  grid-template-columns: minmax(260px, 300px) minmax(0, 1fr);
+  height: 100%;
+  font-family: var(--at-body);
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--at-ink);
+  font-variant-numeric: lining-nums;
 }
-.attune .at-item:hover .at-cmp-toggle,
-.attune .at-item.is-selected .at-cmp-toggle { opacity: 1; }
-.attune .at-root .at-cmp-toggle:hover { background: var(--at-fill-3); color: var(--at-parch); }
-.attune .at-root .at-cmp-toggle:active { transform: scale(0.9); }
-.attune .at-item.in-compare .at-cmp-toggle {
-  opacity: 1;
-  background: linear-gradient(180deg, #e0c070, #c9a24a);
-  color: var(--at-on-gold);
-  box-shadow: 0 0 10px rgba(212, 178, 90, 0.3);
-}
-.attune .at-empty { padding: 24px 12px; text-align: center; color: var(--at-parch-3); font-style: italic; }
 
-/* ============ Main ============ */
-.attune .at-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-
-/* Tabs: a segmented pill, as in the Kronos menus. */
-.attune .at-tabs {
-  align-self: flex-start;
+.attune .at-root ul.at-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
+  flex-direction: column;
   gap: 2px;
-  margin: 16px 24px 0;
+}
+
+/* ==========================================================================
+   Shared atoms: pills, segments, chips, tags, buttons, switch, tiles
+   ========================================================================== */
+
+/* A segmented pill (filters, tabs) — the same shape as Triad's strike pill. */
+.attune .at-pill {
+  display: flex;
+  align-items: center;
+  gap: 2px;
   padding: 3px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.3);
-  box-shadow: inset 0 0 0 1px var(--at-line);
+  background: rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 0 0 1px var(--at-hair);
 }
-.attune .at-root .at-tab {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+
+.attune .at-root .at-seg {
+  gap: 6px;
   height: 30px;
-  padding: 0 16px;
+  padding: 0 12px;
   border-radius: 999px;
-  font-family: var(--at-head);
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--at-parch-3);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  color: var(--at-ink-faint);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.2s ease;
 }
-.attune .at-root .at-tab i { font-size: 11px; }
-.attune .at-root .at-tab:hover { color: var(--at-parch); background: var(--at-fill-2); }
-.attune .at-root .at-tab.is-active {
+
+.attune .at-root .at-seg i { font-size: 11px; }
+.attune .at-root .at-seg:hover { background: var(--at-fill-3); color: var(--at-ink); }
+.attune .at-root .at-seg:active { transform: scale(0.96); }
+
+/* Active segment: Triad's active rail tab — a gold disc, not a solid fill. */
+.attune .at-root .at-seg.is-active {
+  background: var(--at-gold-soft);
+  box-shadow: inset 0 0 0 1px var(--at-gold-line), 0 0 12px rgba(212, 178, 90, 0.18);
   color: var(--at-gold-light);
+}
+
+/* Chips: round icon buttons and small pills, as in Triad's row controls. */
+.attune .at-root .at-chip {
+  gap: 6px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 999px;
+  background: var(--at-fill-2);
+  box-shadow: inset 0 0 0 1px var(--at-hair);
+  color: var(--at-ink);
+  font-size: 12px;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.2s ease, transform 0.12s ease, opacity 0.15s ease;
+}
+
+.attune .at-root .at-chip:hover {
   background: var(--at-gold-soft);
   box-shadow: inset 0 0 0 1px var(--at-gold-line);
+  color: var(--at-gold-light);
 }
-.attune .at-count {
-  font-family: var(--at-body);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0;
-  padding: 1px 7px;
-  border-radius: 999px;
+
+.attune .at-root .at-chip:active { transform: scale(0.94); }
+
+.attune .at-root .at-chip-round { width: 28px; padding: 0; font-size: 11px; }
+
+.attune .at-root .at-chip-quiet {
+  background: transparent;
+  box-shadow: none;
+  color: var(--at-ink-faint);
+}
+
+.attune .at-root .at-chip-quiet:hover {
   background: var(--at-fill-3);
-  color: var(--at-parch-3);
-  font-variant-numeric: tabular-nums lining-nums;
+  box-shadow: none;
+  color: var(--at-ink);
 }
-.attune .at-count.is-on { background: var(--at-gold); color: var(--at-on-gold); font-weight: 600; }
 
-.attune .at-pane { flex: 1; min-height: 0; overflow-y: auto; padding: 24px 24px 32px; scrollbar-width: thin; scrollbar-color: rgba(212, 178, 90, 0.3) transparent; }
-
-/* Hero */
-.attune .at-hero { display: grid; grid-template-columns: 72px 1fr auto; gap: 16px; align-items: center; }
-.attune .at-hero-img {
-  width: 72px;
-  height: 72px;
-  border-radius: 16px;
-  object-fit: cover;
-  background: var(--at-fill-2);
-  border: none;
-  box-shadow: 0 0 0 1px var(--at-gold-line), 0 0 24px rgba(212, 178, 90, 0.18), 0 8px 20px rgba(0, 0, 0, 0.45);
-}
-.attune .at-hero-text { min-width: 0; }
-.attune .at-hero h2 {
-  margin: 0;
-  border: none;
-  font-family: var(--at-head);
-  font-size: 21px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  color: var(--at-parch);
-  line-height: 1.2;
-  text-wrap: balance;
-}
-.attune .at-meta {
-  margin: 4px 0 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 10px;
-  color: var(--at-parch-2);
-  font-size: 13px;
-}
-.attune .at-meta span + span::before { content: ""; display: inline-block; width: 3px; height: 3px; margin: 0 10px 0 0; vertical-align: 3px; border-radius: 50%; background: var(--at-parch-3); }
-.attune .at-meta i { color: var(--at-gold); margin-right: 4px; font-size: 11px; }
-.attune .at-chips { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
-.attune .at-chips:empty { display: none; }
-.attune .at-chip {
-  display: inline-flex;
-  align-items: center;
-  height: 22px;
-  font-family: var(--at-head);
-  font-size: 9.5px;
+/* Text pill chip: Triad's reload chip — outlined gold, small caps. */
+.attune .at-root .at-chip-pill {
+  height: 26px;
+  padding: 0 12px;
+  background: transparent;
+  font-family: var(--at-display);
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: var(--at-fill-2);
-  box-shadow: inset 0 0 0 1px var(--at-line-2);
-  color: var(--at-parch-2);
 }
-.attune .at-chip.is-moss { box-shadow: inset 0 0 0 1px var(--at-moss-line); color: var(--at-moss); background: var(--at-moss-soft); }
-.attune .at-chip.is-ember { box-shadow: inset 0 0 0 1px rgba(200, 85, 61, 0.5); color: var(--at-ember-light); background: var(--at-ember-soft); }
-.attune .at-hero-actions { display: flex; gap: 6px; align-self: start; flex-wrap: wrap; justify-content: flex-end; max-width: 300px; }
 
-.attune .at-root .at-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: var(--at-fill-2);
-  box-shadow: inset 0 0 0 1px var(--at-line-2), var(--at-highlight);
-  color: var(--at-parch-2);
-  font-family: var(--at-head);
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.2s ease, transform 0.12s ease;
+.attune .at-root .at-chip-pill i { font-size: 9px; }
+
+.attune .at-root .at-chip-pill.is-gold {
+  box-shadow: inset 0 0 0 1px var(--at-gold-line);
+  color: var(--at-gold-light);
 }
-.attune .at-root .at-btn:hover { background: var(--at-gold-soft); box-shadow: inset 0 0 0 1px var(--at-gold-line); color: var(--at-gold-light); }
-.attune .at-root .at-btn:active { transform: scale(0.96); }
-.attune .at-root .at-btn.is-on { background: var(--at-gold-soft); box-shadow: inset 0 0 0 1px var(--at-gold-line); color: var(--at-gold-light); }
-.attune .at-root .at-btn-icon { width: 32px; padding: 0; justify-content: center; }
-.attune .at-root .at-btn.is-primary {
-  background: linear-gradient(180deg, #e0c070, #c9a24a);
+
+.attune .at-root .at-chip-pill.is-gold:hover {
+  background: var(--at-gold-fill);
+  box-shadow: 0 0 12px rgba(212, 178, 90, 0.35);
+  color: var(--at-on-gold);
+}
+
+.attune .at-root .at-chip-pill.is-accent {
+  background: var(--at-gold-fill);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 14px rgba(212, 178, 90, 0.22);
   color: var(--at-on-gold);
 }
-.attune .at-root .at-btn.is-primary:hover { background: linear-gradient(180deg, #ebcd80, #d4ad55); color: var(--at-on-gold); }
-.attune .at-root .at-btn-quiet { background: transparent; box-shadow: none; color: var(--at-parch-3); height: 28px; padding: 0 10px; }
-.attune .at-root .at-btn-quiet:hover { background: var(--at-ember-soft); box-shadow: none; color: var(--at-ember-light); }
-.attune .at-root .at-btn:disabled { opacity: 0.45; }
 
-/* Stats: one card, hairline dividers. */
-.attune .at-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 0;
-  margin: 24px 0 8px;
-  padding: 4px;
-  border-radius: 16px;
-  background: var(--at-fill);
-  box-shadow: inset 0 0 0 1px var(--at-line), var(--at-highlight);
+.attune .at-root .at-chip-pill.is-accent:hover {
+  background: var(--at-gold-fill-hover);
+  color: var(--at-on-gold);
 }
-.attune .at-stat {
-  position: relative;
-  display: grid;
-  align-content: center;
-  gap: 4px;
-  padding: 12px 16px;
-}
-.attune .at-stat + .at-stat::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 1px;
-  height: 32px;
-  margin-top: -16px;
-  background: var(--at-line-2);
-}
-.attune .at-stat-label {
-  font-family: var(--at-head);
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--at-parch-3);
-}
-.attune .at-stat-value { font-size: 20px; font-weight: 600; line-height: 1.1; color: var(--at-parch); font-variant-numeric: tabular-nums lining-nums; }
-.attune .at-stat-sub { font-size: 12px; color: var(--at-parch-3); font-style: italic; }
 
-/* Sections */
-.attune .at-section {
-  margin: 32px 0 12px;
-  border: none;
-  font-family: var(--at-head);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--at-gold);
-  display: flex;
-  align-items: center;
-  gap: 12px;
+/* On the sheet: moss; hover turns it into "Remove". */
+.attune .at-root .at-chip-pill.is-granted {
+  background: var(--at-moss-soft);
+  box-shadow: inset 0 0 0 1px var(--at-moss-line);
+  color: var(--at-moss-light);
 }
-.attune .at-section::after { content: ""; order: 2; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(212, 178, 90, 0.35), transparent); }
-.attune .at-section .at-btn-sm { order: 3; height: 28px; padding: 0 12px; font-size: 10px; }
 
-/* Runes & activations */
-.attune .at-runes { display: grid; gap: 6px; }
-.attune .at-note + .at-runes { margin-top: 8px; }
-.attune .at-rune {
-  border-radius: 14px;
-  background: var(--at-fill);
-  box-shadow: inset 0 0 0 1px var(--at-line);
-  overflow: hidden;
-  transition: background-color 0.15s ease, box-shadow 0.2s ease;
+.attune .at-root .at-chip-pill.is-granted:hover {
+  background: var(--at-ember-soft);
+  box-shadow: inset 0 0 0 1px var(--at-ember-line);
+  color: var(--at-ember-light);
 }
-.attune .at-rune.is-present:hover { background: var(--at-fill-2); }
-.attune .at-rune.is-open { background: var(--at-fill-2); box-shadow: inset 0 0 0 1px var(--at-gold-line); }
-.attune .at-root .at-rune-head {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px 10px 10px;
-}
-.attune .at-glyph {
-  flex: none;
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--at-gold-soft);
-  border: none;
-  box-shadow: inset 0 0 0 1px var(--at-gold-line);
-  color: var(--at-gold-light);
-  font-size: 12px;
-}
-.attune .at-rune-name { flex: 1; min-width: 0; display: grid; gap: 2px; font-weight: 500; font-size: 14.5px; line-height: 1.2; }
-.attune .at-rune-name small {
-  font-family: var(--at-head);
-  font-weight: 600;
-  font-size: 9.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--at-parch-3);
-}
-.attune .at-rune-effect { font-size: 13px; color: var(--at-parch-2); text-align: right; font-variant-numeric: tabular-nums lining-nums; }
-.attune .at-rune-lvl {
-  flex: none;
+
+.attune .at-chip-pill .at-when-idle,
+.attune .at-chip-pill .at-when-hover { display: inline-flex; align-items: center; gap: 6px; }
+.attune .at-chip-pill .at-when-hover { display: none; }
+.attune .at-chip-pill:hover .at-when-idle { display: none; }
+.attune .at-chip-pill:hover .at-when-hover { display: inline-flex; }
+
+/* Tags: read-only pills. */
+.attune .at-tag {
   display: inline-flex;
   align-items: center;
-  height: 22px;
-  font-size: 11.5px;
+  gap: 5px;
+  height: 20px;
   padding: 0 8px;
   border-radius: 999px;
-  background: var(--at-fill-3);
-  color: var(--at-parch-2);
+  background: var(--at-fill-2);
+  color: var(--at-ink-dim);
+  font-size: 11.5px;
+  font-style: normal;
   font-variant-numeric: tabular-nums lining-nums;
+  white-space: nowrap;
 }
-.attune .at-caret { width: 16px; text-align: center; color: var(--at-parch-3); font-size: 10px; transition: transform 0.2s var(--at-ease), color 0.15s ease; }
-.attune .at-rune.is-open .at-caret { transform: rotate(180deg); color: var(--at-gold); }
 
-.attune .at-rune.is-absent .at-glyph,
-.attune .at-rune.is-slot .at-glyph { background: transparent; box-shadow: none; border: 1px dashed var(--at-line-2); color: var(--at-parch-3); }
-.attune .at-rune.is-absent .at-rune-name,
-.attune .at-rune.is-slot .at-rune-name { color: var(--at-parch-3); font-weight: 400; font-style: italic; }
-.attune .at-rune.is-slot { background: transparent; box-shadow: none; border: 1px dashed var(--at-line-2); }
-.attune .at-rune.is-inactive { opacity: 0.55; }
-.attune .at-rune.is-inactive .at-glyph { box-shadow: inset 0 0 0 1px rgba(200, 85, 61, 0.55); color: var(--at-ember-light); background: var(--at-ember-soft); }
-.attune .at-rune.rarity-uncommon .at-rune-name small { color: var(--at-gold); }
-.attune .at-rune.rarity-rare .at-rune-name small,
-.attune .at-rune.rarity-unique .at-rune-name small { color: var(--at-ember-light); }
+.attune .at-tag i { font-size: 9px; color: var(--at-ink-faint); }
+.attune .at-tag.is-moss { background: var(--at-moss-soft); color: var(--at-moss-light); box-shadow: inset 0 0 0 1px rgba(138, 154, 91, 0.35); }
+.attune .at-tag.is-moss i { color: inherit; }
+.attune .at-tag.is-ember { background: var(--at-ember-soft); color: var(--at-ember-light); box-shadow: inset 0 0 0 1px rgba(200, 85, 61, 0.35); }
 
-.attune .at-rune-body {
-  padding: 0 16px 16px 54px;
-  color: var(--at-parch-2);
-  font-size: 13.5px;
-  line-height: 1.55;
-  animation: at-fade 0.2s ease;
-}
-.attune .at-rune-body p { margin: 0 0 8px; }
-.attune .at-rune-body hr { border: none; border-top: 1px solid var(--at-line); margin: 12px 0; }
-.attune .at-rune-body strong { color: var(--at-parch); }
-.attune .at-rune-body a { color: var(--at-gold); }
-.attune .at-muted { color: var(--at-parch-3); font-style: italic; }
-
-.attune .at-glyph-act {
-  font-family: var(--at-body);
-  font-size: 13px;
-  letter-spacing: -1px;
-  font-weight: 600;
-}
-.attune .at-act.type-reaction .at-glyph-act { font-size: 18px; background: var(--at-ember-soft); box-shadow: inset 0 0 0 1px rgba(200, 85, 61, 0.5); color: var(--at-ember-light); }
-.attune .at-act.type-free .at-glyph-act { background: var(--at-moss-soft); box-shadow: inset 0 0 0 1px var(--at-moss-line); color: var(--at-moss); }
-.attune .at-act.is-granted { box-shadow: inset 0 0 0 1px var(--at-moss-line); }
-.attune .at-act.is-granted.is-open { box-shadow: inset 0 0 0 1px var(--at-gold-line); }
-
-.attune .at-act-line {
-  margin: -2px 0 0;
-  padding: 0 16px 8px 54px;
-  font-size: 13.5px;
-  color: var(--at-parch-2);
-  line-height: 1.45;
-}
-.attune .at-act-line strong {
-  font-family: var(--at-head);
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--at-gold);
-  margin-right: 6px;
-}
-.attune .at-act-foot {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
+/* Buttons: Triad's pill button. */
+.attune .at-root .at-btn {
   gap: 8px;
-  padding: 0 12px 12px 54px;
-  min-height: 8px;
-}
-.attune .at-onsheet { margin-right: auto; font-size: 13px; color: var(--at-moss); }
-.attune .at-onsheet i { margin-right: 6px; }
-.attune .at-small { font-size: 12px; margin-right: auto; }
-
-.attune .at-section-count {
-  font-family: var(--at-body);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0;
-  padding: 1px 8px;
+  height: 34px;
+  padding: 0 var(--sp-2);
   border-radius: 999px;
-  background: var(--at-ember);
-  color: #fff3e6;
-  box-shadow: 0 0 10px rgba(200, 85, 61, 0.45);
-}
-
-.attune .at-new {
-  position: absolute;
-  left: 36px;
-  top: 4px;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--at-ember);
-  box-shadow: 0 0 0 2px rgba(20, 17, 15, 0.95), 0 0 8px rgba(200, 85, 61, 0.6);
-}
-
-.attune .at-note {
-  margin: 12px 0 0;
-  padding: 12px 16px;
-  border-radius: var(--at-radius);
-  background: var(--at-fill);
-  box-shadow: inset 0 0 0 1px var(--at-line);
-  color: var(--at-parch-2);
-  font-size: 13px;
-}
-.attune .at-note i { margin-right: 6px; }
-.attune .at-note.is-warn { background: var(--at-ember-soft); box-shadow: inset 0 0 0 1px rgba(200, 85, 61, 0.4); color: #eaa996; }
-.attune .at-hero + .at-note { margin-top: 24px; }
-
-.attune .at-blank {
-  height: 100%;
-  min-height: 260px;
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: 16px;
-  text-align: center;
-  color: var(--at-parch-3);
-  font-style: italic;
-  max-width: 320px;
-  margin: 0 auto;
-}
-.attune .at-blank i { font-size: 40px; color: rgba(212, 178, 90, 0.35); filter: drop-shadow(0 0 16px rgba(212, 178, 90, 0.2)); }
-.attune .at-blank p { margin: 0; }
-
-/* ============ Compare ============ */
-.attune .at-cmp-bar { display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 16px; }
-.attune .at-cmp {
-  --at-label: 150px;
-  border-radius: 16px;
-  background: var(--at-fill);
-  box-shadow: inset 0 0 0 1px var(--at-line);
-  overflow: hidden;
-}
-.attune .at-cmp-row {
-  display: grid;
-  grid-template-columns: var(--at-label) repeat(var(--at-cols), minmax(0, 1fr));
-  border-top: 1px solid var(--at-line);
-  transition: background-color 0.12s ease;
-}
-.attune .at-cmp-row:not(.at-cmp-headrow):hover { background: var(--at-fill); }
-.attune .at-cmp-headrow { border-top: none; background: rgba(28, 24, 21, 0.97); position: sticky; top: -24px; z-index: 1; }
-.attune .at-cmp-label {
-  padding: 10px 16px;
-  font-family: var(--at-head);
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--at-parch-3);
-  display: flex;
-  align-items: center;
-}
-.attune .at-cmp-cell {
-  padding: 10px 12px;
-  border-left: 1px solid var(--at-line);
-  font-size: 13.5px;
-  color: var(--at-parch-2);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-variant-numeric: tabular-nums lining-nums;
-}
-.attune .at-cmp-row.is-diff .at-cmp-cell { color: var(--at-parch); }
-.attune .at-cmp-row.is-diff .at-cmp-label { color: var(--at-parch-2); }
-.attune .at-cmp-cell.is-best { color: var(--at-moss); font-weight: 600; background: var(--at-moss-soft); }
-.attune .at-cmp-cell.is-has { color: var(--at-parch); }
-.attune .at-cmp-cell.is-has::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--at-gold); box-shadow: 0 0 6px rgba(212, 178, 90, 0.5); flex: none; }
-.attune .at-cmp-cell.is-na { color: var(--at-parch-3); background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(255, 255, 255, 0.02) 6px 12px); }
-.attune .at-cmp-section {
-  padding: 16px 16px 8px;
-  border-top: 1px solid var(--at-line);
-  font-family: var(--at-head);
+  background: var(--at-fill-2);
+  box-shadow: inset 0 0 0 1px var(--at-hair-2), var(--at-highlight);
+  font-family: var(--at-display);
   font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--at-gold);
-  background: rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  transition: background-color 0.15s ease, box-shadow 0.2s ease, color 0.15s ease, transform 0.12s ease;
 }
-.attune .at-cmp-head {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  align-items: start;
-  align-content: start;
-  padding: 12px;
-  border-left: 1px solid var(--at-line);
-}
-.attune .at-cmp-head img { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; border: none; box-shadow: 0 0 0 1px var(--at-line-2); }
-.attune .at-cmp-head-text { min-width: 0; display: grid; gap: 2px; }
-.attune .at-cmp-head-text strong { font-weight: 600; font-size: 14px; line-height: 1.25; cursor: pointer; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; transition: color 0.15s ease; }
-.attune .at-cmp-head-text strong:hover { color: var(--at-gold-light); }
-.attune .at-cmp-head-text small { font-size: 12px; line-height: 1.3; color: var(--at-parch-3); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.attune .at-cmp-owner { color: var(--at-gold) !important; font-family: var(--at-head); font-size: 9.5px !important; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
-.attune .at-root .at-x {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 24px;
-  height: 24px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  font-size: 11px;
-  color: var(--at-parch-3);
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-.attune .at-root .at-x:hover { background: var(--at-ember-soft); color: var(--at-ember-light); }
 
-/* Scrollbars */
-.attune .at-rail-list::-webkit-scrollbar,
-.attune .at-pane::-webkit-scrollbar { width: 6px; }
-.attune .at-rail-list::-webkit-scrollbar-thumb,
-.attune .at-pane::-webkit-scrollbar-thumb { background: rgba(212, 178, 90, 0.3); border-radius: 999px; }
+.attune .at-root .at-btn i { font-size: 11px; }
 
-/* ============ Party toggle: a row with a switch ============ */
-.attune .at-root .at-party-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 6px 0 14px;
+.attune .at-root .at-btn:hover {
+  background: var(--at-gold-soft);
+  box-shadow: inset 0 0 0 1px var(--at-gold-line);
+  color: var(--at-gold-light);
+}
+
+.attune .at-root .at-btn:active { transform: scale(0.97); }
+
+.attune .at-root .at-btn.is-on {
+  background: var(--at-gold-fill);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 14px rgba(212, 178, 90, 0.25);
+  color: var(--at-on-gold);
+}
+
+.attune .at-root .at-btn.is-on:hover { background: var(--at-gold-fill-hover); color: var(--at-on-gold); }
+
+/* Switch rows: Triad's roll-option toggle, switch first. */
+.attune .at-root .at-toggle {
+  justify-content: flex-start;
+  gap: 12px;
+  height: 36px;
+  padding: 0 12px 0 var(--sp-1);
   border-radius: 999px;
   background: var(--at-fill);
-  box-shadow: inset 0 0 0 1px var(--at-line);
-  color: var(--at-parch-2);
+  box-shadow: inset 0 0 0 1px var(--at-hair);
+  color: var(--at-ink-dim);
   font-size: 13px;
-  transition: background-color 0.15s ease;
+  line-height: 1.2;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
-.attune .at-root .at-party-toggle > i:first-child { font-size: 11px; color: var(--at-parch-3); }
-.attune .at-root .at-party-toggle span { flex: 1; }
-.attune .at-root .at-party-toggle:hover { background: var(--at-fill-2); color: var(--at-parch); }
-.attune .at-root .at-party-toggle.is-on > i:first-child { color: var(--at-gold); }
-/* The Font Awesome toggle icon is drawn over by a Kronos-style switch. */
-.attune .at-party-switch {
+
+.attune .at-root .at-toggle:hover { background: var(--at-fill-2); color: var(--at-ink); }
+.attune .at-root .at-toggle.is-on { color: var(--at-ink); }
+.attune .at-toggle-label { flex: 1; min-width: 0; text-align: left; }
+.attune .at-toggle-icon { font-size: 11px; color: var(--at-ink-faint); }
+.attune .at-toggle.is-on .at-toggle-icon { color: var(--at-gold); }
+
+.attune .at-switch {
   position: relative;
   flex: 0 0 34px;
   width: 34px;
   height: 20px;
   border-radius: 999px;
   background: var(--at-fill-3);
-  box-shadow: inset 0 0 0 1px var(--at-line);
-  font-size: 0;
+  box-shadow: inset 0 0 0 1px var(--at-hair);
   transition: background-color 0.18s ease;
 }
-.attune .at-party-switch::before {
-  content: "" !important;
+
+.attune .at-switch::after {
+  content: "";
   position: absolute;
   top: 3px;
   left: 3px;
@@ -812,16 +434,863 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
   transition: transform 0.2s var(--at-ease), background-color 0.18s ease;
 }
-.attune .at-party-toggle.is-on .at-party-switch { background: var(--at-gold); }
-.attune .at-party-toggle.is-on .at-party-switch::before { transform: translateX(14px); background: var(--at-on-gold); }
 
-@keyframes at-fade { from { opacity: 0; } to { opacity: 1; } }
+.attune .at-toggle.is-on .at-switch { background: var(--at-gold); }
+.attune .at-toggle.is-on .at-switch::after { transform: translateX(14px); background: var(--at-on-gold); }
 
-@media (prefers-reduced-motion: reduce) {
-  .attune *, .attune *::before, .attune *::after { animation: none !important; transition: none !important; }
+/* Tiles: Triad's row icon — rounded square, hairline ring, soft drop. */
+.attune .at-root .at-tile {
+  position: relative;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 9px;
+  background: var(--at-fill-2);
+  box-shadow: 0 0 0 1px var(--at-hair-2), 0 2px 6px rgba(0, 0, 0, 0.35);
+  color: var(--at-gold);
+  font-size: 13px;
+  transition: box-shadow 0.2s ease, transform 0.12s ease, background-color 0.15s ease;
 }
 
-/* ============ Character sheet inventory badge ============ */
+.attune .at-tile img {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: inherit;
+  object-fit: cover;
+  display: block;
+}
+
+.attune .at-root button.at-tile:hover {
+  box-shadow: 0 0 0 1px var(--at-gold-line), 0 0 12px rgba(212, 178, 90, 0.3);
+}
+
+.attune .at-root button.at-tile:active { transform: scale(0.92); }
+
+/* Dot: something new to add (same as Triad's dock badge). */
+.attune .at-new {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--at-ember);
+  box-shadow: 0 0 0 2px rgba(20, 17, 15, 0.95), 0 0 8px rgba(200, 85, 61, 0.6);
+}
+
+/* ==========================================================================
+   Rail
+   ========================================================================== */
+
+.attune .at-rail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: rgba(0, 0, 0, 0.18);
+  border-right: 1px solid var(--at-hair);
+}
+
+.attune .at-rail-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  padding: var(--sp-2) var(--sp-2) 12px;
+}
+
+/* Search: Triad's elevation field, full width. */
+.attune .at-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.3);
+  box-shadow: inset 0 0 0 1px var(--at-hair);
+  color: var(--at-ink-faint);
+  font-size: 11px;
+  cursor: text;
+  transition: box-shadow 0.2s ease, color 0.15s ease;
+}
+
+.attune .at-search-wrap:focus-within {
+  box-shadow: inset 0 0 0 1px var(--at-gold-line), 0 0 0 3px var(--at-gold-soft);
+  color: var(--at-gold);
+}
+
+.attune .at-search {
+  all: unset;
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  color: var(--at-ink);
+  font-family: var(--at-body);
+  font-size: 13.5px;
+}
+
+.attune .at-search::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+.attune .at-search::placeholder { color: var(--at-ink-faint); font-style: italic; }
+
+.attune .at-filters { justify-content: space-between; }
+.attune .at-root .at-filter { flex: 1; padding: 0 4px; }
+.attune .at-party-toggle { width: 100%; }
+
+.attune .at-rail-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 6px var(--sp-1) var(--sp-2);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 14px);
+  mask-image: linear-gradient(180deg, transparent 0, #000 14px);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 178, 90, 0.3) transparent;
+}
+
+.attune .at-owner + .at-owner { margin-top: var(--sp-2); }
+
+/* Owner: Triad's group header — small caps, faint, with a hairline that fades. */
+.attune .at-owner-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  margin: 0 0 4px;
+  padding: var(--sp-1) 4px 4px;
+  font-family: var(--at-display);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--at-ink-dim);
+}
+
+.attune .at-owner-head img {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top center;
+  box-shadow: 0 0 0 1px var(--at-hair-2);
+}
+
+.attune .at-owner-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attune .at-owner-head::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--at-hair-2), transparent);
+}
+
+.attune .at-owner-head .at-tag {
+  height: 18px;
+  font-family: var(--at-body);
+  font-size: 10.5px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Item rows in the rail. */
+.attune .at-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 6px 6px var(--sp-1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.2s ease;
+}
+
+.attune .at-item:hover { background: var(--at-fill); }
+
+.attune .at-item.is-selected {
+  background: var(--at-gold-soft);
+  box-shadow: inset 0 0 0 1px var(--at-gold-line);
+}
+
+.attune .at-item.is-selected .at-tile { box-shadow: 0 0 0 1px var(--at-gold-line), 0 0 12px rgba(212, 178, 90, 0.25); }
+.attune .at-item.is-selected .at-row-name { color: var(--at-gold-light); }
+
+.attune .at-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 2px;
+  text-align: left;
+}
+
+.attune .at-row-name {
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.attune .at-row-meta {
+  min-width: 0;
+  font-size: 11.5px;
+  line-height: 1.25;
+  color: var(--at-ink-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attune .at-row-meta.is-hidden { font-style: italic; }
+
+.attune .at-eq {
+  margin-left: 6px;
+  font-size: 9px;
+  color: var(--at-moss);
+  vertical-align: 1px;
+}
+
+.attune .at-root .at-cmp-toggle {
+  flex: 0 0 28px;
+  opacity: 0;
+}
+
+.attune .at-item:hover .at-cmp-toggle,
+.attune .at-item.is-selected .at-cmp-toggle,
+.attune .at-root .at-cmp-toggle:focus-visible { opacity: 1; }
+
+.attune .at-root .at-item.in-compare .at-cmp-toggle {
+  opacity: 1;
+  background: var(--at-gold-fill);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 10px rgba(212, 178, 90, 0.3);
+  color: var(--at-on-gold);
+}
+
+/* ==========================================================================
+   Main pane
+   ========================================================================== */
+
+.attune .at-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.attune .at-tabs-bar {
+  display: flex;
+  padding: var(--sp-2) var(--sp-3) 0;
+}
+
+.attune .at-root .at-tab { padding: 0 var(--sp-2); font-family: var(--at-display); font-size: 10.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+
+.attune .at-count {
+  display: inline-grid;
+  place-items: center;
+  height: 18px;
+  min-width: 26px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--at-fill-2);
+  color: var(--at-ink-faint);
+  font-family: var(--at-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.attune .at-count.is-on { background: var(--at-gold-fill); color: var(--at-on-gold); font-weight: 600; }
+
+.attune .at-pane {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--sp-3) var(--sp-3) var(--sp-4);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 178, 90, 0.3) transparent;
+}
+
+.attune .at-detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  animation: at-fade 0.2s ease;
+}
+
+/* --- Hero: Triad's header — portrait with a level badge, name, subtitle ---- */
+
+.attune .at-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.attune .at-portrait {
+  position: relative;
+  flex: 0 0 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: var(--at-fill-2);
+  box-shadow: 0 0 0 1px var(--at-hair-2), 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.attune .at-portrait img {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: inherit;
+  object-fit: cover;
+  display: block;
+}
+
+.attune .at-portrait-level {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #1c1712;
+  box-shadow: 0 0 0 1px var(--at-gold-line), 0 2px 6px rgba(0, 0, 0, 0.5);
+  color: var(--at-gold-light);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.attune .at-hero-info {
+  flex: 1 1 240px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.attune .at-name {
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-family: var(--at-display);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+  color: var(--at-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attune .at-subtitle {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--at-ink-dim);
+}
+
+.attune .at-subtitle span + span::before { content: "·"; margin-right: 10px; font-style: normal; color: var(--at-ink-faint); }
+.attune .at-subtitle i { margin-right: 3px; font-size: 10px; font-style: normal; color: var(--at-gold); }
+
+.attune .at-tags { margin: 2px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.attune .at-tags:empty { display: none; }
+
+.attune .at-root .at-chip-open { width: 34px; min-width: 34px; height: 34px; color: var(--at-ink-dim); }
+
+.attune .at-hero-actions {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --- Stat strip: one card, hairline dividers, centered numbers ----------- */
+
+.attune .at-stats {
+  display: grid;
+  grid-template-columns: repeat(var(--at-stat-cols, 3), minmax(0, 1fr));
+  padding: 4px;
+  border-radius: 14px;
+  background: var(--at-fill);
+  box-shadow: inset 0 0 0 1px var(--at-hair), var(--at-highlight);
+}
+
+.attune .at-stat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 64px;
+  padding: 10px var(--sp-1);
+  text-align: center;
+}
+
+.attune .at-stat + .at-stat::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 32px;
+  margin-top: -16px;
+  background: var(--at-hair-2);
+}
+
+.attune .at-stat-value {
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--at-ink);
+}
+
+.attune .at-stat:first-child .at-stat-value { color: var(--at-gold-light); }
+
+.attune .at-stat-label {
+  font-family: var(--at-display);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--at-ink-faint);
+}
+
+.attune .at-stat-sub {
+  max-width: 100%;
+  font-size: 11.5px;
+  font-style: italic;
+  line-height: 1.2;
+  color: var(--at-ink-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Sections: gold label, a hairline that fades, optional action -------- */
+
+.attune .at-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.attune .at-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 26px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  font-family: var(--at-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--at-gold);
+}
+
+.attune .at-section-header > span {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.attune .at-section-header > span::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(212, 178, 90, 0.35), transparent);
+}
+
+.attune .at-section-count {
+  display: inline-grid;
+  place-items: center;
+  height: 18px;
+  min-width: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--at-ember);
+  box-shadow: 0 0 10px rgba(200, 85, 61, 0.45);
+  color: #fff3e6;
+  font-family: var(--at-body);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+/* --- Rows: runes and activations --------------------------------------- */
+
+.attune .at-row {
+  border-radius: 12px;
+  transition: background-color 0.15s ease, box-shadow 0.2s ease;
+}
+
+.attune .at-row.is-present:hover,
+.attune .at-act:hover { background: var(--at-fill); }
+
+.attune .at-row.is-open {
+  background: var(--at-fill);
+  box-shadow: inset 0 0 0 1px var(--at-hair);
+}
+
+.attune .at-row-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 6px var(--sp-1);
+}
+
+.attune .at-row.is-present .at-row-main { cursor: pointer; }
+.attune .at-row.is-present .at-row-main:hover .at-row-name,
+.attune .at-act .at-row-text:hover .at-row-name { color: var(--at-gold-light); }
+
+.attune .at-act .at-row-text { align-self: stretch; cursor: pointer; }
+
+.attune .at-row-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex-shrink: 0;
+}
+
+.attune .at-row-effect {
+  font-size: 13px;
+  color: var(--at-ink-dim);
+  white-space: nowrap;
+}
+
+.attune .at-caret {
+  width: 16px;
+  text-align: center;
+  font-size: 9px;
+  color: var(--at-ink-faint);
+  transition: transform 0.2s var(--at-ease), color 0.15s ease;
+}
+
+.attune .at-row.is-open .at-caret { transform: rotate(180deg); color: var(--at-gold); }
+
+/* Empty, absent and inactive runes. */
+.attune .at-row.is-absent .at-tile,
+.attune .at-row.is-slot .at-tile {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--at-hair-2);
+  color: var(--at-ink-faint);
+}
+
+.attune .at-row.is-slot .at-tile { box-shadow: none; outline: 1px dashed var(--at-hair-2); outline-offset: -1px; }
+
+.attune .at-row.is-absent .at-row-name,
+.attune .at-row.is-slot .at-row-name { color: var(--at-ink-faint); font-style: italic; }
+
+.attune .at-row.is-inactive { opacity: 0.5; }
+.attune .at-row.is-inactive .at-tile { background: var(--at-ember-soft); box-shadow: 0 0 0 1px var(--at-ember-line); color: var(--at-ember-light); }
+
+.attune .at-row.rarity-uncommon .at-row-meta { color: var(--at-gold); }
+.attune .at-row.rarity-rare .at-row-meta,
+.attune .at-row.rarity-unique .at-row-meta { color: var(--at-ember-light); }
+
+/* Activation glyph tiles, tinted by action type. */
+.attune .at-root .at-tile-glyph { font-size: 17px; color: var(--at-ink); }
+.attune .at-tile-glyph .action-glyph { line-height: 1; }
+.attune .at-root .at-act.type-reaction .at-tile-glyph { background: var(--at-ember-soft); box-shadow: 0 0 0 1px var(--at-ember-line), 0 2px 6px rgba(0, 0, 0, 0.35); color: var(--at-ember-light); }
+.attune .at-root .at-act.type-free .at-tile-glyph { background: var(--at-moss-soft); box-shadow: 0 0 0 1px var(--at-moss-line), 0 2px 6px rgba(0, 0, 0, 0.35); color: var(--at-moss-light); }
+.attune .at-root .at-act.type-action .at-tile-glyph { background: var(--at-gold-soft); box-shadow: 0 0 0 1px var(--at-gold-line), 0 2px 6px rgba(0, 0, 0, 0.35); color: var(--at-gold-light); }
+
+/* Trigger under the row, aligned with the name column. */
+.attune .at-row-trigger {
+  margin: -4px 0 0;
+  padding: 0 var(--sp-1) 10px 52px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--at-ink-dim);
+}
+
+.attune .at-row-trigger strong,
+.attune .at-summary strong:first-child {
+  margin-right: 6px;
+  font-family: var(--at-display);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--at-gold);
+}
+
+/* Expanded text: Triad's row summary — a dark well under the name column. */
+.attune .at-summary {
+  margin: 0 var(--sp-1) var(--sp-1) 52px;
+  padding: 12px var(--sp-2);
+  border-radius: 12px;
+  background: var(--at-well);
+  box-shadow: inset 0 0 0 1px var(--at-hair);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--at-ink-dim);
+  animation: at-pop 0.18s var(--at-ease);
+}
+
+.attune .at-summary p { margin: 0 0 var(--sp-1); }
+.attune .at-summary p:last-child { margin-bottom: 0; }
+.attune .at-summary hr { border: none; border-top: 1px solid var(--at-hair); margin: 12px 0; }
+.attune .at-summary strong { color: var(--at-ink); font-weight: 600; }
+.attune .at-summary a { color: var(--at-gold-light); }
+.attune .at-summary ul { margin: 0 0 var(--sp-1); padding-left: 18px; }
+
+.attune .at-muted { color: var(--at-ink-faint); font-style: italic; }
+.attune .at-small { font-size: 12px; }
+
+/* Notes. */
+.attune .at-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--at-well);
+  box-shadow: inset 0 0 0 1px var(--at-hair);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--at-ink-dim);
+}
+
+.attune .at-note i { margin-top: 3px; font-size: 11px; color: var(--at-ink-faint); }
+.attune .at-note.is-warn { background: var(--at-ember-soft); box-shadow: inset 0 0 0 1px rgba(200, 85, 61, 0.35); color: #f0b4a3; }
+.attune .at-note.is-warn i { color: var(--at-ember-light); }
+
+/* Empty state: Triad's. */
+.attune .at-blank {
+  height: 100%;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  color: var(--at-ink-faint);
+  text-align: center;
+}
+
+.attune .at-blank i {
+  font-size: 48px;
+  color: rgba(212, 178, 90, 0.28);
+  filter: drop-shadow(0 0 16px rgba(212, 178, 90, 0.18));
+}
+
+.attune .at-blank p { max-width: 240px; margin: 0; font-style: italic; }
+.attune .at-blank.is-small { height: auto; min-height: 160px; gap: 12px; }
+.attune .at-blank.is-small i { font-size: 28px; }
+
+/* ==========================================================================
+   Compare
+   ========================================================================== */
+
+.attune .at-cmp-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-2);
+}
+
+.attune .at-cmp {
+  --at-label: 150px;
+  border-radius: 14px;
+  background: var(--at-fill);
+  box-shadow: inset 0 0 0 1px var(--at-hair), var(--at-highlight);
+  overflow: hidden;
+  animation: at-fade 0.2s ease;
+}
+
+.attune .at-cmp-row {
+  display: grid;
+  grid-template-columns: var(--at-label) repeat(var(--at-cols), minmax(0, 1fr));
+  border-top: 1px solid var(--at-hair);
+  transition: background-color 0.15s ease;
+}
+
+.attune .at-cmp-row:not(.at-cmp-headrow):hover { background: var(--at-fill); }
+
+.attune .at-cmp-headrow {
+  position: sticky;
+  top: calc(-1 * var(--sp-3));
+  z-index: 1;
+  border-top: none;
+  background: rgba(24, 20, 17, 0.96);
+  backdrop-filter: blur(8px);
+}
+
+.attune .at-cmp-label {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  font-family: var(--at-display);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--at-ink-faint);
+}
+
+.attune .at-cmp-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 14px;
+  border-left: 1px solid var(--at-hair);
+  font-size: 13.5px;
+  color: var(--at-ink-dim);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.attune .at-cmp-row.is-diff .at-cmp-label { color: var(--at-ink-dim); }
+.attune .at-cmp-row.is-diff .at-cmp-cell { color: var(--at-ink); }
+
+/* The best value in a row: gold, what matters now. */
+.attune .at-cmp-cell.is-best {
+  background: var(--at-gold-soft);
+  color: var(--at-gold-light);
+  font-weight: 600;
+}
+
+.attune .at-cmp-cell.is-best i { font-size: 11px; color: var(--at-gold); }
+.attune .at-cmp-cell.is-has { color: var(--at-ink); }
+.attune .at-cmp-cell.is-has::before { content: ""; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--at-gold); box-shadow: 0 0 6px rgba(212, 178, 90, 0.5); }
+.attune .at-cmp-cell.is-na { color: var(--at-ink-faint); background: repeating-linear-gradient(135deg, transparent 0 6px, rgba(255, 255, 255, 0.02) 6px 12px); }
+
+.attune .at-cmp-section {
+  padding: var(--sp-2) 14px 6px;
+  border-top: 1px solid var(--at-hair);
+  font-family: var(--at-display);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--at-gold);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.attune .at-cmp-section span { display: flex; align-items: center; gap: 12px; }
+.attune .at-cmp-section span::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(212, 178, 90, 0.35), transparent); }
+
+.attune .at-cmp-head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 36px 14px 14px;
+  border-left: 1px solid var(--at-hair);
+}
+
+.attune .at-cmp-head .at-tile { flex: 0 0 36px; width: 36px; height: 36px; }
+.attune .at-cmp-head-text { min-width: 0; width: 100%; display: flex; flex-direction: column; gap: 3px; }
+
+.attune .at-cmp-head-text strong {
+  font-family: var(--at-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.25;
+  cursor: pointer;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.15s ease;
+}
+
+.attune .at-cmp-head-text strong:hover { color: var(--at-gold-light); }
+
+.attune .at-cmp-head-text small {
+  font-size: 11.5px;
+  line-height: 1.3;
+  color: var(--at-ink-faint);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.attune .at-cmp-head-text small.at-cmp-owner {
+  font-family: var(--at-display);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--at-gold);
+}
+
+.attune .at-root .at-x {
+  position: absolute;
+  top: 10px;
+  right: 8px;
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+}
+
+.attune .at-root .at-x:hover { background: var(--at-ember-soft); color: var(--at-ember-light); }
+
+/* ==========================================================================
+   Scrollbars & motion
+   ========================================================================== */
+
+.attune .at-rail-list::-webkit-scrollbar,
+.attune .at-pane::-webkit-scrollbar { width: 6px; }
+
+.attune .at-rail-list::-webkit-scrollbar-thumb,
+.attune .at-pane::-webkit-scrollbar-thumb { background: rgba(212, 178, 90, 0.3); border-radius: 999px; }
+
+@keyframes at-pop {
+  from { opacity: 0; transform: translateY(-4px) scale(0.99); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes at-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .attune *,
+  .attune *::before,
+  .attune *::after { animation: none !important; transition: none !important; }
+}
+
+/* ==========================================================================
+   Character sheet inventory badge (outside the window)
+   ========================================================================== */
+
 .attune-badge {
   display: inline-grid;
   place-items: center;
@@ -836,6 +1305,7 @@ body {
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
+
 .attune-badge:hover { background: #d4b25a; color: #1c1712; }
 .attune-badge.is-pending { color: #fff; background: #c8553d; box-shadow: 0 0 6px rgba(200, 85, 61, 0.6); }
 
@@ -852,21 +1322,21 @@ body {
   <aside class="at-rail">
     <div class="at-rail-head">
       <label class="at-search-wrap">
-        <i class="fa-solid fa-magnifying-glass"></i>
+        <i class="fa-solid fa-magnifying-glass" inert></i>
         <input type="search" class="at-search" placeholder="{{labels.search}}" autocomplete="off">
       </label>
-      <nav class="at-filters">
+      <nav class="at-pill at-filters">
         {{#each filters}}
-        <button type="button" class="at-filter {{#if active}}is-active{{/if}}" data-action="setFilter" data-filter="{{id}}" data-tooltip="{{label}}" aria-label="{{label}}">
-          <i class="{{icon}}"></i><span>{{count}}</span>
+        <button type="button" class="at-seg at-filter {{#if active}}is-active{{/if}}" data-action="setFilter" data-filter="{{id}}" data-tooltip="{{label}}" aria-label="{{label}}">
+          <i class="{{icon}}" inert></i><span>{{count}}</span>
         </button>
         {{/each}}
       </nav>
       {{#if hasParty}}
-      <button type="button" class="at-party-toggle {{#if showParty}}is-on{{/if}}" data-action="toggleParty">
-        <i class="fa-solid {{#if showParty}}fa-users{{else}}fa-user{{/if}}"></i>
-        <span>{{partyLabel}}</span>
-        <i class="fa-solid {{#if showParty}}fa-toggle-on{{else}}fa-toggle-off{{/if}} at-party-switch"></i>
+      <button type="button" class="at-toggle at-party-toggle {{#if showParty}}is-on{{/if}}" data-action="toggleParty" role="switch" aria-checked="{{#if showParty}}true{{else}}false{{/if}}">
+        <span class="at-switch" aria-hidden="true"></span>
+        <span class="at-toggle-label">{{partyLabel}}</span>
+        <i class="fa-solid {{#if showParty}}fa-users{{else}}fa-user{{/if}} at-toggle-icon" inert></i>
       </button>
       {{/if}}
     </div>
@@ -877,217 +1347,240 @@ body {
         <header class="at-owner-head">
           <img src="{{img}}" alt="">
           <span class="at-owner-name">{{name}}</span>
-          {{#if isOwn}}<span class="at-tag">{{@root.labels.you}}</span>{{/if}}
+          {{#if isOwn}}<span class="at-tag is-moss">{{@root.labels.you}}</span>{{/if}}
         </header>
-        {{#each items}}
-        <div class="at-item {{#if isSelected}}is-selected{{/if}} {{#if inCompare}}in-compare{{/if}}" data-action="select" data-key="{{key}}" data-search="{{searchText}}">
-          <img class="at-item-img" src="{{img}}" alt="">
-          <div class="at-item-text">
-            <span class="at-item-name">{{#if isEquipped}}<i class="fa-solid fa-hand at-eq" data-tooltip="{{@root.labels.equipped}}"></i>{{/if}}{{name}}</span>
-            <span class="at-item-sum {{#if hidden}}is-hidden{{/if}}">{{summary}}</span>
-          </div>
-          {{#if hasNew}}<span class="at-new" data-tooltip="{{@root.labels.addToSheet}}"></span>{{/if}}
-          <button type="button" class="at-cmp-toggle" data-action="toggleCompare" data-key="{{key}}"
-            data-tooltip="{{#if inCompare}}{{@root.labels.removeCompare}}{{else}}{{@root.labels.addCompare}}{{/if}}">
-            <i class="fa-solid {{#if inCompare}}fa-check{{else}}fa-plus{{/if}}"></i>
-          </button>
-        </div>
-        {{/each}}
+        <ul class="at-list">
+          {{#each items}}
+          <li class="at-item {{#if isSelected}}is-selected{{/if}} {{#if inCompare}}in-compare{{/if}}" data-action="select" data-key="{{key}}" data-search="{{searchText}}">
+            <span class="at-tile">
+              <img src="{{img}}" alt="">
+              {{#if hasNew}}<span class="at-new" data-tooltip="{{@root.labels.addToSheet}}"></span>{{/if}}
+            </span>
+            <span class="at-row-text">
+              <span class="at-row-name">{{name}}{{#if isEquipped}}<i class="fa-solid fa-hand at-eq" data-tooltip="{{@root.labels.equipped}}"></i>{{/if}}</span>
+              <span class="at-row-meta {{#if hidden}}is-hidden{{/if}}">{{summary}}</span>
+            </span>
+            <button type="button" class="at-chip at-chip-round at-cmp-toggle" data-action="toggleCompare" data-key="{{key}}"
+              data-tooltip="{{#if inCompare}}{{@root.labels.removeCompare}}{{else}}{{@root.labels.addCompare}}{{/if}}"
+              aria-label="{{#if inCompare}}{{@root.labels.removeCompare}}{{else}}{{@root.labels.addCompare}}{{/if}}">
+              <i class="fa-solid {{#if inCompare}}fa-check{{else}}fa-plus{{/if}}" inert></i>
+            </button>
+          </li>
+          {{/each}}
+        </ul>
       </section>
       {{else}}
-      <p class="at-empty">{{labels.noItems}}</p>
+      <div class="at-blank is-small"><i class="fa-solid fa-gem" inert></i><p>{{labels.noItems}}</p></div>
       {{/each}}
-      <p class="at-empty at-search-empty" hidden>{{labels.noMatches}}</p>
+      <div class="at-blank is-small at-search-empty" hidden><i class="fa-solid fa-magnifying-glass" inert></i><p>{{labels.noMatches}}</p></div>
     </div>
   </aside>
 
   <main class="at-main">
-    <nav class="at-tabs">
-      <button type="button" class="at-tab {{#if isDetail}}is-active{{/if}}" data-action="setTab" data-tab="detail">
-        <i class="fa-solid fa-book-open"></i> {{labels.details}}
-      </button>
-      <button type="button" class="at-tab {{#if isCompare}}is-active{{/if}}" data-action="setTab" data-tab="compare">
-        <i class="fa-solid fa-scale-balanced"></i> {{labels.compare}}
-        <span class="at-count {{#if compareCount}}is-on{{/if}}">{{compareCount}}/{{compareMax}}</span>
-      </button>
+    <nav class="at-tabs-bar">
+      <div class="at-pill at-tabs">
+        <button type="button" class="at-seg at-tab {{#if isDetail}}is-active{{/if}}" data-action="setTab" data-tab="detail">
+          <i class="fa-solid fa-book-open" inert></i> {{labels.details}}
+        </button>
+        <button type="button" class="at-seg at-tab {{#if isCompare}}is-active{{/if}}" data-action="setTab" data-tab="compare">
+          <i class="fa-solid fa-scale-balanced" inert></i> {{labels.compare}}
+          <span class="at-count {{#if compareCount}}is-on{{/if}}">{{compareCount}}/{{compareMax}}</span>
+        </button>
+      </div>
     </nav>
 
     <div class="at-pane">
       {{#if isDetail}}
         {{#if selected}}
         {{#with selected}}
+        <div class="at-detail">
         <header class="at-hero">
-          <img class="at-hero-img" src="{{img}}" alt="">
-          <div class="at-hero-text">
-            <h2>{{name}}</h2>
-            <p class="at-meta">
-              <span><i class="{{categoryIcon}}"></i> {{categoryLabel}}</span>
-              <span>{{levelLabel}}</span>
+          <div class="at-portrait">
+            <img src="{{img}}" alt="">
+            {{#unless hidden}}<span class="at-portrait-level" data-tooltip="{{levelLabel}}">{{raw.level}}</span>{{/unless}}
+          </div>
+          <div class="at-hero-info">
+            <h2 class="at-name">{{name}}</h2>
+            <p class="at-subtitle">
+              <span><i class="{{categoryIcon}}" inert></i> {{categoryLabel}}</span>
               {{#if price}}<span>{{price}}</span>{{/if}}
               <span>{{ownerName}}</span>
             </p>
-            <p class="at-chips">
-              {{#if carryLabel}}<span class="at-chip {{#if isEquipped}}is-moss{{/if}}">{{carryLabel}}</span>{{/if}}
-              {{#if isInvested}}<span class="at-chip is-moss">{{@root.labels.invested}}</span>{{/if}}
-              {{#if notInvested}}<span class="at-chip is-ember">{{@root.labels.notInvested}}</span>{{/if}}
-              {{#if hidden}}<span class="at-chip is-ember">{{@root.labels.unidentified}}</span>{{/if}}
+            <p class="at-tags">
+              {{#if carryLabel}}<span class="at-tag {{#if isEquipped}}is-moss{{/if}}">{{carryLabel}}</span>{{/if}}
+              {{#if isInvested}}<span class="at-tag is-moss">{{@root.labels.invested}}</span>{{/if}}
+              {{#if notInvested}}<span class="at-tag is-ember">{{@root.labels.notInvested}}</span>{{/if}}
+              {{#if hidden}}<span class="at-tag is-ember">{{@root.labels.unidentified}}</span>{{/if}}
             </p>
           </div>
           <div class="at-hero-actions">
             <button type="button" class="at-btn {{#if inCompare}}is-on{{/if}}" data-action="toggleCompare" data-key="{{key}}">
-              <i class="fa-solid fa-scale-balanced"></i>
+              <i class="fa-solid {{#if inCompare}}fa-check{{else}}fa-scale-balanced{{/if}}" inert></i>
               {{#if inCompare}}{{@root.labels.removeCompare}}{{else}}{{@root.labels.addCompare}}{{/if}}
             </button>
             {{#if canOpen}}
-            <button type="button" class="at-btn at-btn-icon" data-action="openSheet" data-key="{{key}}" data-tooltip="{{@root.labels.openSheet}}" aria-label="{{@root.labels.openSheet}}">
-              <i class="fa-solid fa-up-right-from-square"></i>
+            <button type="button" class="at-chip at-chip-round at-chip-open" data-action="openSheet" data-key="{{key}}" data-tooltip="{{@root.labels.openSheet}}" aria-label="{{@root.labels.openSheet}}">
+              <i class="fa-solid fa-up-right-from-square" inert></i>
             </button>
             {{/if}}
           </div>
         </header>
 
         {{#if hidden}}
-        <p class="at-note"><i class="fa-solid fa-eye-slash"></i> {{@root.labels.unidentifiedNote}}</p>
+        <p class="at-note"><i class="fa-solid fa-eye-slash" inert></i> {{@root.labels.unidentifiedNote}}</p>
         {{else}}
         {{#if stats.length}}
-        <div class="at-stats">
+        <div class="at-stats" style="--at-stat-cols: {{stats.length}}">
           {{#each stats}}
           <div class="at-stat">
-            <span class="at-stat-label">{{label}}</span>
             <span class="at-stat-value">{{value}}</span>
-            {{#if sub}}<span class="at-stat-sub">{{sub}}</span>{{/if}}
+            <span class="at-stat-label">{{label}}</span>
+            {{#if sub}}<span class="at-stat-sub" data-tooltip="{{sub}}">{{sub}}</span>{{/if}}
           </div>
           {{/each}}
         </div>
         {{/if}}
 
         {{#if hasActivations}}
-        <h3 class="at-section">
-          {{@root.labels.activations}}
-          {{#if hasNew}}<span class="at-section-count">{{addable}}</span>{{/if}}
-          {{#if canAddAll}}<button type="button" class="at-btn at-btn-sm is-primary" data-action="addAll" data-key="{{key}}"><i class="fa-solid fa-plus"></i> {{@root.labels.addAll}}</button>{{/if}}
-        </h3>
-        {{#if investNote}}<p class="at-note is-warn"><i class="fa-solid fa-triangle-exclamation"></i> {{investNote}}</p>{{/if}}
-        <div class="at-runes">
-          {{#each activations}}
-          <div class="at-rune at-act is-present {{#if expanded}}is-open{{/if}} {{#if onSheet}}is-granted{{/if}} type-{{actionType}}">
-            <button type="button" class="at-rune-head" data-action="toggleRune" data-rune="{{descKey}}">
-              <span class="at-glyph at-glyph-act">{{glyph}}</span>
-              <span class="at-rune-name">
-                {{name}}
-                <small>{{typeLabel}}{{#if traitsText}} · {{traitsText}}{{/if}}</small>
-              </span>
-              {{#if frequency}}<span class="at-rune-lvl">{{frequency}}</span>{{/if}}
-              <i class="fa-solid fa-chevron-down at-caret"></i>
-            </button>
-            {{#unless expanded}}
-            {{#if trigger}}<p class="at-act-line"><strong>{{@root.labels.trigger}}</strong> {{trigger}}</p>{{/if}}
-            {{#if requirements}}<p class="at-act-line"><strong>{{@root.labels.requirements}}</strong> {{requirements}}</p>{{/if}}
-            {{/unless}}
-            {{#if expanded}}
-            <div class="at-rune-body">
-              {{#if descLoading}}<p class="at-muted"><i class="fa-solid fa-spinner fa-spin"></i> {{@root.labels.loading}}</p>
-              {{else if descMissing}}<p class="at-muted">{{@root.labels.noDesc}}</p>
-              {{else}}{{{descHtml}}}{{/if}}
-            </div>
-            {{/if}}
-            <div class="at-act-foot">
-              {{#if onSheet}}<span class="at-onsheet"><i class="fa-solid fa-circle-check"></i> {{@root.labels.onSheet}}</span>{{/if}}
-              {{#if canEdit}}
-                {{#if onSheet}}
-                <button type="button" class="at-btn at-btn-quiet" data-action="toggleActivation" data-key="{{itemKey}}" data-index="{{index}}" data-on="true">{{@root.labels.removeFromSheet}}</button>
-                {{else}}
-                <button type="button" class="at-btn is-primary" data-action="toggleActivation" data-key="{{itemKey}}" data-index="{{index}}" data-on="false"><i class="fa-solid fa-plus"></i> {{@root.labels.addToSheet}}</button>
-                {{/if}}
-              {{else}}
-                {{#unless onSheet}}<span class="at-muted at-small">{{@root.labels.readOnly}}</span>{{/unless}}
+        <section class="at-section">
+          <h3 class="at-section-header">
+            <span>{{@root.labels.activations}}{{#if hasNew}}<em class="at-section-count">{{addable}}</em>{{/if}}</span>
+            {{#if canAddAll}}<button type="button" class="at-chip at-chip-pill is-accent" data-action="addAll" data-key="{{key}}"><i class="fa-solid fa-plus" inert></i> {{@root.labels.addAll}}</button>{{/if}}
+          </h3>
+          {{#if investNote}}<p class="at-note is-warn"><i class="fa-solid fa-triangle-exclamation" inert></i> {{investNote}}</p>{{/if}}
+          <ul class="at-list">
+            {{#each activations}}
+            <li class="at-row at-act type-{{actionType}} {{#if expanded}}is-open{{/if}} {{#if onSheet}}is-granted{{/if}}">
+              <div class="at-row-main">
+                <button type="button" class="at-tile at-tile-glyph" data-action="toggleRune" data-rune="{{descKey}}" aria-label="{{typeLabel}}" data-tooltip="{{typeLabel}}">
+                  <span class="action-glyph" data-fallback="{{glyph}}">{{glyphCode}}</span>
+                </button>
+                <button type="button" class="at-row-text" data-action="toggleRune" data-rune="{{descKey}}">
+                  <span class="at-row-name">{{name}}</span>
+                  <span class="at-row-meta">{{typeLabel}}{{#if traitsText}} · {{traitsText}}{{/if}}</span>
+                </button>
+                <span class="at-row-controls">
+                  {{#if frequency}}<span class="at-tag" data-tooltip="{{@root.labels.frequency}}"><i class="fa-solid fa-hourglass-half" inert></i> {{frequency}}</span>{{/if}}
+                  {{#if canEdit}}
+                    {{#if onSheet}}
+                    <button type="button" class="at-chip at-chip-pill is-granted" data-action="toggleActivation" data-key="{{itemKey}}" data-index="{{index}}" data-on="true" data-tooltip="{{@root.labels.removeFromSheet}}">
+                      <span class="at-when-idle"><i class="fa-solid fa-check" inert></i> {{@root.labels.onSheet}}</span>
+                      <span class="at-when-hover"><i class="fa-solid fa-xmark" inert></i> {{@root.labels.removeFromSheet}}</span>
+                    </button>
+                    {{else}}
+                    <button type="button" class="at-chip at-chip-pill is-gold" data-action="toggleActivation" data-key="{{itemKey}}" data-index="{{index}}" data-on="false">
+                      <i class="fa-solid fa-plus" inert></i> {{@root.labels.addToSheet}}
+                    </button>
+                    {{/if}}
+                  {{else}}
+                    {{#if onSheet}}<span class="at-tag is-moss"><i class="fa-solid fa-check" inert></i> {{@root.labels.onSheet}}</span>{{/if}}
+                  {{/if}}
+                </span>
+              </div>
+              {{#unless expanded}}
+              {{#if trigger}}<p class="at-row-trigger"><strong>{{@root.labels.trigger}}</strong> {{trigger}}</p>{{/if}}
+              {{#if requirements}}<p class="at-row-trigger"><strong>{{@root.labels.requirements}}</strong> {{requirements}}</p>{{/if}}
+              {{/unless}}
+              {{#if expanded}}
+              <div class="at-summary">
+                {{#if descLoading}}<p class="at-muted"><i class="fa-solid fa-spinner fa-spin" inert></i> {{@root.labels.loading}}</p>
+                {{else if descMissing}}<p class="at-muted">{{@root.labels.noDesc}}</p>
+                {{else}}{{{descHtml}}}{{/if}}
+                {{#unless canEdit}}{{#unless onSheet}}<p class="at-muted at-small">{{@root.labels.readOnly}}</p>{{/unless}}{{/unless}}
+              </div>
               {{/if}}
-            </div>
-          </div>
-          {{/each}}
-        </div>
+            </li>
+            {{/each}}
+          </ul>
+        </section>
         {{/if}}
 
         {{#each runeGroups}}
-        <h3 class="at-section">{{title}}</h3>
-        <div class="at-runes">
-          {{#each runes}}
-          {{#if isSlot}}
-          <div class="at-rune is-slot">
-            <div class="at-rune-head">
-              <span class="at-glyph"><i class="fa-regular fa-circle"></i></span>
-              <span class="at-rune-name">{{@root.labels.emptySlot}}</span>
-            </div>
-          </div>
-          {{else}}
-          <div class="at-rune {{#if present}}is-present{{else}}is-absent{{/if}} {{#if inactive}}is-inactive{{/if}} {{#if expanded}}is-open{{/if}} {{#if isRare}}is-rare rarity-{{rarity}}{{/if}}">
-            <button type="button" class="at-rune-head" {{#if present}}data-action="toggleRune" data-rune="{{runeKey}}"{{else}}disabled{{/if}}>
-              <span class="at-glyph"><i class="{{icon}}"></i></span>
-              <span class="at-rune-name">
-                {{name}}
-                <small>{{kindLabel}}{{#if inactive}} · {{@root.labels.inactive}}{{/if}}</small>
-              </span>
-              {{#if effect}}<span class="at-rune-effect">{{effect}}</span>{{/if}}
-              {{#if level}}<span class="at-rune-lvl">{{level}}</span>{{/if}}
-              {{#if present}}<i class="fa-solid fa-chevron-down at-caret"></i>{{/if}}
-            </button>
-            {{#if expanded}}
-            <div class="at-rune-body">
-              {{#if descLoading}}<p class="at-muted"><i class="fa-solid fa-spinner fa-spin"></i> {{@root.labels.loading}}</p>
-              {{else if descMissing}}<p class="at-muted">{{@root.labels.noDesc}}</p>
-              {{else}}{{{descHtml}}}{{/if}}
-            </div>
+        <section class="at-section">
+          <h3 class="at-section-header"><span>{{title}}</span></h3>
+          <ul class="at-list">
+            {{#each runes}}
+            {{#if isSlot}}
+            <li class="at-row is-slot">
+              <div class="at-row-main">
+                <span class="at-tile"><i class="fa-regular fa-circle" inert></i></span>
+                <span class="at-row-text"><span class="at-row-name">{{@root.labels.emptySlot}}</span></span>
+              </div>
+            </li>
+            {{else}}
+            <li class="at-row {{#if present}}is-present{{else}}is-absent{{/if}} {{#if inactive}}is-inactive{{/if}} {{#if expanded}}is-open{{/if}} {{#if isRare}}is-rare rarity-{{rarity}}{{/if}}">
+              <div class="at-row-main" {{#if present}}data-action="toggleRune" data-rune="{{runeKey}}" role="button" tabindex="0"{{/if}}>
+                <span class="at-tile"><i class="{{icon}}" inert></i></span>
+                <span class="at-row-text">
+                  <span class="at-row-name">{{name}}</span>
+                  <span class="at-row-meta">{{kindLabel}}{{#if inactive}} · {{@root.labels.inactive}}{{/if}}</span>
+                </span>
+                <span class="at-row-controls">
+                  {{#if effect}}<span class="at-row-effect">{{effect}}</span>{{/if}}
+                  {{#if level}}<span class="at-tag">{{level}}</span>{{/if}}
+                  {{#if present}}<i class="fa-solid fa-chevron-down at-caret" inert></i>{{/if}}
+                </span>
+              </div>
+              {{#if expanded}}
+              <div class="at-summary">
+                {{#if descLoading}}<p class="at-muted"><i class="fa-solid fa-spinner fa-spin" inert></i> {{@root.labels.loading}}</p>
+                {{else if descMissing}}<p class="at-muted">{{@root.labels.noDesc}}</p>
+                {{else}}{{{descHtml}}}{{/if}}
+              </div>
+              {{/if}}
+            </li>
             {{/if}}
-          </div>
-          {{/if}}
-          {{/each}}
-        </div>
-        {{#if note}}<p class="at-note is-warn"><i class="fa-solid fa-triangle-exclamation"></i> {{note}}</p>{{/if}}
+            {{/each}}
+          </ul>
+          {{#if note}}<p class="at-note is-warn"><i class="fa-solid fa-triangle-exclamation" inert></i> {{note}}</p>{{/if}}
+        </section>
         {{/each}}
         {{/if}}
+        </div>
         {{/with}}
         {{else}}
-        <div class="at-blank"><i class="fa-solid fa-gem"></i><p>{{labels.noSelection}}</p></div>
+        <div class="at-blank"><i class="fa-solid fa-gem" inert></i><p>{{labels.noSelection}}</p></div>
         {{/if}}
 
       {{else}}
         {{#if compareCount}}
         <div class="at-cmp-bar">
-          <button type="button" class="at-btn {{#if diffOnly}}is-on{{/if}}" data-action="toggleDiff">
-            <i class="fa-solid {{#if diffOnly}}fa-square-check{{else}}fa-square{{/if}}"></i> {{labels.diffOnly}}
+          <button type="button" class="at-toggle at-diff-toggle {{#if diffOnly}}is-on{{/if}}" data-action="toggleDiff" role="switch" aria-checked="{{#if diffOnly}}true{{else}}false{{/if}}">
+            <span class="at-switch" aria-hidden="true"></span>
+            <span class="at-toggle-label">{{labels.diffOnly}}</span>
           </button>
-          <button type="button" class="at-btn" data-action="clearCompare"><i class="fa-solid fa-broom"></i> {{labels.clearCompare}}</button>
+          <button type="button" class="at-btn" data-action="clearCompare"><i class="fa-solid fa-broom" inert></i> {{labels.clearCompare}}</button>
         </div>
         <div class="at-cmp" style="--at-cols: {{compareCount}}">
           <div class="at-cmp-row at-cmp-headrow">
             <div class="at-cmp-label"></div>
             {{#each compare}}
             <div class="at-cmp-head">
-              <img src="{{img}}" alt="">
+              <span class="at-tile"><img src="{{img}}" alt=""></span>
               <div class="at-cmp-head-text">
                 <strong data-action="select" data-key="{{key}}" data-reveal="true">{{name}}</strong>
                 <small class="at-cmp-owner">{{ownerName}}</small>
                 <small>{{summary}}</small>
               </div>
-              <button type="button" class="at-x" data-action="toggleCompare" data-key="{{key}}" aria-label="{{@root.labels.removeCompare}}"><i class="fa-solid fa-xmark"></i></button>
+              <button type="button" class="at-chip at-chip-round at-chip-quiet at-x" data-action="toggleCompare" data-key="{{key}}" aria-label="{{@root.labels.removeCompare}}"><i class="fa-solid fa-xmark" inert></i></button>
             </div>
             {{/each}}
           </div>
           {{#each compareRows}}
             {{#if section}}
-            <div class="at-cmp-section">{{section}}</div>
+            <div class="at-cmp-section"><span>{{section}}</span></div>
             {{else}}
             <div class="at-cmp-row {{#if diff}}is-diff{{/if}}">
               <div class="at-cmp-label">{{label}}</div>
               {{#each cells}}
-              <div class="at-cmp-cell {{#if best}}is-best{{/if}} {{#if na}}is-na{{/if}} {{#if has}}is-has{{/if}}">{{#if best}}<i class="fa-solid fa-caret-up"></i> {{/if}}{{text}}</div>
+              <div class="at-cmp-cell {{#if best}}is-best{{/if}} {{#if na}}is-na{{/if}} {{#if has}}is-has{{/if}}">{{#if best}}<i class="fa-solid fa-caret-up" inert></i>{{/if}}<span>{{text}}</span></div>
               {{/each}}
             </div>
             {{/if}}
           {{/each}}
         </div>
         {{else}}
-        <div class="at-blank"><i class="fa-solid fa-scale-balanced"></i><p>{{compareEmptyText}}</p></div>
+        <div class="at-blank"><i class="fa-solid fa-scale-balanced" inert></i><p>{{compareEmptyText}}</p></div>
         {{/if}}
       {{/if}}
     </div>
@@ -1597,6 +2090,7 @@ function itemView(item, L, catalog, state) {
       itemKey: item.key,
       name: a.name || item.name,
       glyph: glyphText(a.actionType, a.actions),
+      glyphCode: a.actionType === "reaction" ? "R" : a.actionType === "free" ? "F" : String(Math.max(1, Math.min(3, Number(a.actions) || 1))),
       actionType: a.actionType,
       typeLabel: a.actionType === "action" ? fmt(a.actions > 1 ? L.actionsN : L.actionOne, { n: a.actions || 1 }) : (L[`type_${a.actionType}`] ?? humanize(a.actionType)),
       traitsText: (a.traits ?? []).map(humanize).join(", "),
