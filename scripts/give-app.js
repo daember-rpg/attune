@@ -34,7 +34,7 @@ export class GiveDialog extends HandlebarsApplicationMixin(ApplicationV2) {
     super({ ...options, id: `${MODULE_ID}-give-${actor.id}-${item.id}` });
     this.actor = actor;
     this.item = item;
-    this.state = { targetId: null, quantity: 1 };
+    this.choice = { targetId: null, quantity: 1 };
     this.busy = false;
   }
 
@@ -44,7 +44,7 @@ export class GiveDialog extends HandlebarsApplicationMixin(ApplicationV2) {
     return Object.assign(context, giveView({
       item: { name: item.name, img: item.img, quantity: Number(item.system?.quantity) || 1, ownerName: this.actor.name },
       recipients: recipientsFor(this.actor),
-      state: this.state,
+      state: this.choice,
       L: labels(),
       needsGM: (r) => needsGM(r && game.actors.get(r.id)),
       gmOnline: gmOnline()
@@ -55,34 +55,34 @@ export class GiveDialog extends HandlebarsApplicationMixin(ApplicationV2) {
     super._onRender?.(context, options);
     const input = this.element.querySelector(".at-qty-input");
     input?.addEventListener("change", () => {
-      this.state.quantity = clampQuantity(input.value, Number(this.item.system?.quantity) || 1);
+      this.choice.quantity = clampQuantity(input.value, Number(this.item.system?.quantity) || 1);
       this.render();
     });
     input?.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); input.blur(); } });
   }
 
   static #onPick(event, target) {
-    this.state.targetId = target.dataset.id;
+    this.choice.targetId = target.dataset.id;
     this.render();
   }
 
   static #onStep(event, target) {
-    this.state.quantity += Number(target.dataset.step) || 0;
+    this.choice.quantity += Number(target.dataset.step) || 0;
     this.render();
   }
 
   static #onAll() {
-    this.state.quantity = Number(this.item.system?.quantity) || 1;
+    this.choice.quantity = Number(this.item.system?.quantity) || 1;
     this.render();
   }
 
   static async #onGive() {
     if (this.busy) return;
-    const target = game.actors.get(this.state.targetId);
+    const target = game.actors.get(this.choice.targetId);
     if (!target) return;
     this.busy = true;
     this.render();
-    const ok = await giveItem({ source: this.actor, item: this.item, target, quantity: this.state.quantity });
+    const ok = await giveItem({ source: this.actor, item: this.item, target, quantity: this.choice.quantity });
     this.busy = false;
     if (ok) this.close();
     else this.render();
@@ -94,8 +94,20 @@ export class GiveDialog extends HandlebarsApplicationMixin(ApplicationV2) {
 }
 
 export function openGive(actor, item) {
-  if (!canGiveFrom(actor, item)) return null;
-  const app = new GiveDialog({ actor, item });
-  app.render({ force: true });
-  return app;
+  if (!canGiveFrom(actor, item)) {
+    ui.notifications.warn(labels().giveCannot);
+    return null;
+  }
+  try {
+    const app = new GiveDialog({ actor, item });
+    app.render({ force: true }).catch((err) => {
+      console.error(`${MODULE_ID} | could not open the Give dialog`, err);
+      ui.notifications.error(labels().giveError);
+    });
+    return app;
+  } catch (err) {
+    console.error(`${MODULE_ID} | could not open the Give dialog`, err);
+    ui.notifications.error(labels().giveError);
+    return null;
+  }
 }

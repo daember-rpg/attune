@@ -2,7 +2,7 @@
   "id": "attune",
   "title": "Attune",
   "description": "See what your Pathfinder 2e gear does: compare runes, add item activations and reactions to your character sheet, and give items to other characters.",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "authors": [
     {
       "name": "Fernando"
