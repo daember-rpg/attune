@@ -4,6 +4,7 @@ See what your Pathfinder 2e gear does. Compare runes side by side and add item a
 
 ## Features
 
+- **Give items.** Hand any item (gear, potions, coins…) to another character, with a quantity for stacks. From Attune's item header or the hand icon on the character sheet's inventory rows. Giving to another player's character goes through the connected GM's client automatically; there is nothing to approve.
 - **Activations to the sheet.** Attune reads the activations in your items' descriptions (reactions, 1–3 actions, free actions). One click adds them to the character sheet's Actions tab, with traits, frequency tracking and the full text, so they show up in the Reactions section and in any tool that reads the sheet. If the item leaves the character, its actions go with it.
 
 - **Rune browser.** Every weapon, armor and shield on your characters, with fundamental runes (potency, striking, resilient, reinforcing), property runes, free slots and the effective numbers they add up to.

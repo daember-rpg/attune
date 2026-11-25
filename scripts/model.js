@@ -329,6 +329,7 @@ export function itemView(item, L, catalog, state) {
     addable,
     hasNew: addable > 0,
     canAddAll: addable > 1,
+    canGive: !!item.canEdit,
     summary,
     runeCount: fundamentals.filter((f) => f.present).length + properties.length,
     searchText: [item.name, item.ownerName, summary, ...activations.map((a) => a.trigger)].join(" ").toLowerCase(),

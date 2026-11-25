@@ -33,6 +33,12 @@ body {
 .pv-window .window-header .title { flex: 1; }
 .pv-window .window-header .fa-xmark { opacity: .6; }
 .pv-window .window-content { flex: 1; min-height: 0; }
+.pv-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(0,0,0,.45); }
+.pv-backdrop[hidden] { display: none; }
+.pv-give { position: relative; width: 420px; max-width: calc(100vw - 32px); display: flex; flex-direction: column; animation: at-pop .18s cubic-bezier(.2,.8,.2,1); }
+.pv-give .window-header { display: flex; align-items: center; gap: 10px; }
+.pv-give .window-header .title { flex: 1; }
+.pv-give .window-header [data-close] { cursor: pointer; opacity: .6; }
 #at-toast { position: fixed; top: 18px; left: 50%; transform: translate(-50%, -20px); opacity: 0; transition: .2s; background: #2c2621; color: #e8dcc4;
   border: 1px solid #cf4a32; padding: 8px 16px; border-radius: 6px; font-family: "Spectral", serif; pointer-events: none; }
 #at-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
@@ -45,13 +51,21 @@ ${css}
   <header class="window-header"><i class="window-icon fa-solid fa-gem"></i><span class="title">Attune</span><i class="fa-solid fa-xmark"></i></header>
   <section class="window-content" id="at-content"></section>
 </div>
+<div class="pv-backdrop" id="pv-give-backdrop" hidden>
+  <div class="application attune attune-give pv-give">
+    <header class="window-header"><i class="window-icon fa-solid fa-hand-holding"></i><span class="title">Give Item</span><i class="fa-solid fa-xmark" data-close></i></header>
+    <section class="window-content" id="at-give-content"></section>
+  </div>
+</div>
 <div id="at-toast"></div>
 <p class="pv-note">Preview with illustrative data. Rune levels and descriptions come from your PF2e compendium in Foundry.</p>
 <script type="text/x-handlebars-template" id="at-template">${read("templates/attune.hbs")}</script>
+<script type="text/x-handlebars-template" id="at-give-template">${read("templates/give.hbs")}</script>
 <script type="module">
 const LANG = ${read("lang/en.json")};
 ${strip(read("scripts/activations.js"))}
 ${strip(read("scripts/model.js"))}
+${strip(read("scripts/give-model.js"))}
 ${strip(read("scripts/dom.js"))}
 ${readFileSync(join(here, "preview-runtime.js"), "utf8")}
 </script>

@@ -1261,6 +1261,149 @@
 }
 
 /* ==========================================================================
+   Give dialog
+   ========================================================================== */
+
+.application.attune-give { min-width: 360px; min-height: 0; }
+
+.attune .at-root.at-give {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  height: auto;
+  padding: var(--sp-3) var(--sp-3) var(--sp-2);
+}
+
+.attune .at-give-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.attune .at-root .at-tile-lg {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+.attune .at-give-item .at-row-name {
+  font-family: var(--at-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.attune .at-give-item .at-row-meta { font-size: 12.5px; font-style: italic; color: var(--at-ink-dim); }
+
+.attune .at-root ul.at-give-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 178, 90, 0.3) transparent;
+}
+
+/* Recipient: Triad's identity card. */
+.attune .at-root .at-give-target {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 12px;
+  min-height: 52px;
+  padding: var(--sp-1) 12px var(--sp-1) var(--sp-1);
+  border-radius: 12px;
+  background: var(--at-fill);
+  box-shadow: inset 0 0 0 1px var(--at-hair);
+  text-align: left;
+  line-height: 1.2;
+  transition: background-color 0.15s ease, box-shadow 0.2s ease;
+}
+
+.attune .at-root .at-give-target:hover {
+  background: var(--at-fill-2);
+  box-shadow: inset 0 0 0 1px var(--at-gold-line);
+}
+
+.attune .at-root .at-give-target.is-selected {
+  background: var(--at-gold-soft);
+  box-shadow: inset 0 0 0 1px var(--at-gold-line), 0 0 14px rgba(212, 178, 90, 0.16);
+}
+
+.attune .at-give-target img {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  object-fit: cover;
+  object-position: top center;
+  box-shadow: 0 0 0 1px var(--at-hair-2);
+}
+
+.attune .at-give-target.is-selected img { box-shadow: 0 0 0 1px var(--at-gold-line); }
+.attune .at-give-target.is-selected .at-row-name { color: var(--at-gold-light); }
+.attune .at-give-target .at-row-meta i { font-size: 9px; color: var(--at-moss-light); }
+
+.attune .at-give-check {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--at-hair-2);
+  color: transparent;
+  font-size: 10px;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.2s ease;
+}
+
+.attune .at-give-target.is-selected .at-give-check {
+  background: var(--at-gold-fill);
+  box-shadow: 0 0 10px rgba(212, 178, 90, 0.35);
+  color: var(--at-on-gold);
+}
+
+/* Quantity stepper. */
+.attune .at-qty { display: flex; align-items: center; gap: 12px; }
+.attune .at-qty-stepper { gap: 0; }
+.attune .at-root .at-qty-stepper .at-seg { width: 30px; padding: 0; }
+
+.attune .at-qty-input {
+  all: unset;
+  box-sizing: border-box;
+  width: 44px;
+  height: 30px;
+  text-align: center;
+  font-family: var(--at-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--at-ink);
+  font-variant-numeric: tabular-nums lining-nums;
+  -moz-appearance: textfield;
+}
+
+.attune .at-qty-input::-webkit-outer-spin-button,
+.attune .at-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.attune .at-qty-input:focus { color: var(--at-gold-light); }
+.attune .at-qty-of { flex: 1; font-size: 13px; font-style: italic; color: var(--at-ink-faint); }
+
+.attune .at-give-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-1);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--at-hair);
+}
+
+.attune .at-root .at-give-go { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+.attune .at-root .at-give-go:disabled { opacity: 0.4; filter: saturate(0.4); box-shadow: none; }
+
+/* ==========================================================================
    Character sheet inventory badge (outside the window)
    ========================================================================== */
 
@@ -1281,3 +1424,18 @@
 
 .attune-badge:hover { background: #d4b25a; color: #1c1712; }
 .attune-badge.is-pending { color: #fff; background: #c8553d; box-shadow: 0 0 6px rgba(200, 85, 61, 0.6); }
+
+/* Character sheet inventory: the "give" hand among the row controls. */
+.attune-give-control {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: inherit;
+  opacity: 0.75;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+.attune-give-control:hover { opacity: 1; background: rgba(212, 178, 90, 0.18); color: #b8902f; }

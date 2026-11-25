@@ -39,6 +39,7 @@ const OWNERS = [
     item({ key: "a1.i4", actorId: "a1", itemId: "i4", ownerName: "Seraphine Vale", name: "Steel Shield", img: IMG.shield, category: "shield", level: 7, price: "302 gp", carry: "equipped",
       runes: { reinforcing: 2 }, base: { acBonus: 2, hardness: 8, maxHp: 64 } }),
     item({ key: "a1.i5", actorId: "a1", itemId: "i5", ownerName: "Seraphine Vale", name: "Cloak of Smoldering Ash", img: IMG.cloak, category: "gear", level: 9, price: "650 gp", carry: "equipped", invested: true, description: DESCRIPTIONS.cloak }),
+    item({ key: "a1.i7", actorId: "a1", itemId: "i7", ownerName: "Seraphine Vale", name: "Feather Token (Ladder)", img: svgIcon("❦", "#4a4a3a", "#1c1c14"), category: "gear", level: 3, price: "3 gp", quantity: 3, description: "" }),
     item({ key: "a1.i6", actorId: "a1", itemId: "i6", ownerName: "Seraphine Vale", name: "Bounding Boots", img: IMG.boots, category: "gear", level: 7, price: "340 gp", carry: "equipped", invested: false, description: DESCRIPTIONS.boots })
   ]},
   { id: "a2", name: "Bram Ashguard", img: IMG.pc2, isOwn: false, isParty: true, items: [
@@ -92,6 +93,51 @@ const catalog = {
 
 const L = LANG.ATTUNE.UI;
 const template = Handlebars.compile(document.getElementById("at-template").innerHTML);
+const giveTemplate = Handlebars.compile(document.getElementById("at-give-template").innerHTML);
+const giveBackdrop = document.getElementById("pv-give-backdrop");
+const giveContent = document.getElementById("at-give-content");
+let give = null;
+
+function giveRecipients(fromKey) {
+  const from = findItem(fromKey);
+  return OWNERS.filter((o) => o.id !== from.actorId).map((o) => ({ id: o.id, name: o.name, img: o.img, isOwn: !!o.isOwn, sub: o.isOwn ? L.giveYours : ({ a2: "Marina", a3: "Lucas" }[o.id] ?? L.giveNoPlayer) }));
+}
+function renderGive() {
+  const it = findItem(give.key);
+  giveContent.innerHTML = giveTemplate(giveView({
+    item: { name: it.name, img: it.img, quantity: it.quantity ?? 1, ownerName: it.ownerName },
+    recipients: giveRecipients(give.key), state: give.state, L,
+    needsGM: (r) => !!r && !r.isOwn, gmOnline: true
+  }));
+  const input = giveContent.querySelector(".at-qty-input");
+  input?.addEventListener("change", () => { give.state.quantity = clampQuantity(input.value, it.quantity ?? 1); renderGive(); });
+}
+function openGiveDialog(key) { give = { key, state: { targetId: null, quantity: 1 } }; giveBackdrop.hidden = false; renderGive(); }
+function closeGive() { giveBackdrop.hidden = true; give = null; }
+const giveActions = {
+  pick: (t) => { give.state.targetId = t.dataset.id; },
+  step: (t) => { give.state.quantity += Number(t.dataset.step); },
+  all: () => { give.state.quantity = findItem(give.key).quantity ?? 1; },
+  cancel: () => closeGive(),
+  give: () => {
+    const it = findItem(give.key);
+    const from = OWNERS.find((o) => o.id === it.actorId);
+    const to = OWNERS.find((o) => o.id === give.state.targetId);
+    const qty = give.state.quantity, have = it.quantity ?? 1;
+    const copy = { ...it, key: `${to.id}.g${Date.now()}`, actorId: to.id, ownerName: to.name, carry: "carried", quantity: qty, granted: {}, canEdit: !!to.isOwn };
+    to.items.push(copy);
+    if (qty >= have) from.items.splice(from.items.indexOf(it), 1); else it.quantity = have - qty;
+    toast(fmt(L.giveNotice, { giver: from.name, item: `${qty > 1 ? qty + "× " : ""}${it.name}`, target: to.name }));
+    closeGive();
+  }
+};
+giveBackdrop.addEventListener("click", (ev) => {
+  if (ev.target === giveBackdrop || ev.target.closest("[data-close]")) { closeGive(); return; }
+  const t = ev.target.closest("[data-action]");
+  if (!t || t.disabled || !give) return;
+  giveActions[t.dataset.action]?.(t);
+  if (give) renderGive(); else render();
+});
 const content = document.getElementById("at-content");
 const state = initialState();
 
@@ -129,6 +175,7 @@ const actions = {
   setFilter: (t) => { state.filter = t.dataset.filter; },
   toggleDiff: () => { state.diffOnly = !state.diffOnly; },
   openSheet: () => toast("In Foundry this opens the item sheet."),
+  giveItem: (t) => openGiveDialog(t.dataset.key),
   toggleActivation: (t) => {
     const it = findItem(t.dataset.key);
     const i = Number(t.dataset.index);

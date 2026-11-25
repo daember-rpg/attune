@@ -13,6 +13,10 @@
       "SheetBadges": {
         "Name": "Inventory badges",
         "Hint": "Show a small icon on character sheet inventory rows for items with runes or activations."
+      },
+      "SheetGive": {
+        "Name": "Give items from the sheet",
+        "Hint": "Show a hand icon on character sheet inventory rows to give the item to another character."
       }
     },
     "UI": {
@@ -134,7 +138,28 @@
       "addedAllNotice": "{n} activation(s) added to {actor}'s actions.",
       "grantError": "Could not update the character sheet. See the console for details.",
       "showParty": "Show party members",
-      "hideParty": "Showing party members"
+      "hideParty": "Showing party members",
+      "giveTitle": "Give Item",
+      "giveAction": "Give to another character",
+      "giveFrom": "From {name}",
+      "giveHave": "{n} owned",
+      "giveToLabel": "Give to",
+      "giveYours": "Your character",
+      "giveNoPlayer": "No player",
+      "giveNobody": "There is no other character to give this to.",
+      "giveQuantity": "Quantity",
+      "giveOf": "of",
+      "giveAll": "All",
+      "giveCancel": "Cancel",
+      "giveChoose": "Choose a character",
+      "giveTo": "Give to {name}",
+      "giveToN": "Give {n} to {name}",
+      "giveViaGM": "This character belongs to another player, so the GM's client makes the hand-off. Nothing to approve.",
+      "giveNoGM": "A GM must be connected to give items to another player's character.",
+      "giveSent": "Giving {item} to {target}…",
+      "giveNotice": "{giver} gave {item} to {target}.",
+      "giveRefused": "{item} could not be given to {target}.",
+      "giveError": "Could not give the item. See the console for details."
     },
     "Badge": {
       "Pending": "{n} activation(s) not on your sheet yet — open in Attune",

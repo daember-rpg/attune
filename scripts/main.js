@@ -2,6 +2,8 @@ import { MODULE_ID } from "./constants.js";
 import { openAttune, refreshAttune, toggleAttune } from "./app.js";
 import { hasRunes, itemActivations } from "./adapter.js";
 import { cleanupForItem, grantedFor } from "./grants.js";
+import { canGiveFrom, registerGive } from "./give.js";
+import { openGive } from "./give-app.js";
 
 const ICON = "fa-solid fa-gem";
 
@@ -34,6 +36,17 @@ Hooks.once("init", () => {
     default: true
   });
 
+  game.settings.register(MODULE_ID, "sheetGive", {
+    name: "ATTUNE.Settings.SheetGive.Name",
+    hint: "ATTUNE.Settings.SheetGive.Hint",
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true
+  });
+
+  registerGive();
+
   game.keybindings.register(MODULE_ID, "toggle", {
     name: "ATTUNE.Keybind",
     hint: "ATTUNE.KeybindHint",
@@ -45,12 +58,12 @@ Hooks.once("init", () => {
   });
 
   const load = foundry.applications?.handlebars?.loadTemplates ?? globalThis.loadTemplates;
-  load([`modules/${MODULE_ID}/templates/attune.hbs`]);
+  load([`modules/${MODULE_ID}/templates/attune.hbs`, `modules/${MODULE_ID}/templates/give.hbs`]);
 });
 
 Hooks.once("ready", () => {
   const mod = game.modules.get(MODULE_ID);
-  if (mod) mod.api = { open: openAttune, toggle: toggleAttune };
+  if (mod) mod.api = { open: openAttune, toggle: toggleAttune, give: openGive };
 });
 
 /* ---------- Entry points ---------- */
@@ -142,12 +155,38 @@ Hooks.on("getHeaderControlsActorSheetV2", (app, controls) => {
   });
 });
 
-// Inventory badges: a small icon next to items with runes or activations
+// Inventory: a badge next to items with runes or activations, and a "give" hand in the row controls
 Hooks.on("renderCharacterSheetPF2e", (sheet, html) => {
-  if (!game.settings.get(MODULE_ID, "sheetBadges")) return;
   const root = html instanceof HTMLElement ? html : html?.[0];
-  if (root) injectInventoryBadges(root, sheet.actor);
+  if (!root) return;
+  if (game.settings.get(MODULE_ID, "sheetBadges")) injectInventoryBadges(root, sheet.actor);
+  if (game.settings.get(MODULE_ID, "sheetGive")) injectGiveControls(root, sheet.actor);
 });
+
+function injectGiveControls(root, actor) {
+  if (!actor?.isOwner || actor.type !== "character") return;
+  const scope = root.querySelector(".tab[data-tab='inventory']") ?? root;
+  const label = game.i18n.localize("ATTUNE.UI.giveAction");
+  for (const row of scope.querySelectorAll("[data-item-id]")) {
+    const item = actor.items.get(row.dataset.itemId);
+    if (!canGiveFrom(actor, item)) continue;
+    // The row's own controls, not those of an item nested inside it (containers).
+    const controls = [...row.querySelectorAll(".item-controls")].find((c) => c.closest("[data-item-id]") === row);
+    if (!controls || controls.querySelector(".attune-give-control")) continue;
+    const a = document.createElement("a");
+    a.className = "attune-give-control";
+    a.dataset.tooltip = label;
+    a.setAttribute("aria-label", label);
+    a.setAttribute("role", "button");
+    a.innerHTML = `<i class="fa-solid fa-hand-holding" inert></i>`;
+    a.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      openGive(actor, item);
+    });
+    controls.prepend(a);
+  }
+}
 
 function injectInventoryBadges(root, actor) {
   if (!actor) return;

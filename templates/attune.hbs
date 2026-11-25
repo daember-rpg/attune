@@ -98,6 +98,11 @@
               <i class="fa-solid {{#if inCompare}}fa-check{{else}}fa-scale-balanced{{/if}}" inert></i>
               {{#if inCompare}}{{@root.labels.removeCompare}}{{else}}{{@root.labels.addCompare}}{{/if}}
             </button>
+            {{#if canGive}}
+            <button type="button" class="at-chip at-chip-round at-chip-open" data-action="giveItem" data-key="{{key}}" data-tooltip="{{@root.labels.giveAction}}" aria-label="{{@root.labels.giveAction}}">
+              <i class="fa-solid fa-hand-holding" inert></i>
+            </button>
+            {{/if}}
             {{#if canOpen}}
             <button type="button" class="at-chip at-chip-round at-chip-open" data-action="openSheet" data-key="{{key}}" data-tooltip="{{@root.labels.openSheet}}" aria-label="{{@root.labels.openSheet}}">
               <i class="fa-solid fa-up-right-from-square" inert></i>

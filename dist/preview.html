@@ -21,6 +21,12 @@ body {
 .pv-window .window-header .title { flex: 1; }
 .pv-window .window-header .fa-xmark { opacity: .6; }
 .pv-window .window-content { flex: 1; min-height: 0; }
+.pv-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(0,0,0,.45); }
+.pv-backdrop[hidden] { display: none; }
+.pv-give { position: relative; width: 420px; max-width: calc(100vw - 32px); display: flex; flex-direction: column; animation: at-pop .18s cubic-bezier(.2,.8,.2,1); }
+.pv-give .window-header { display: flex; align-items: center; gap: 10px; }
+.pv-give .window-header .title { flex: 1; }
+.pv-give .window-header [data-close] { cursor: pointer; opacity: .6; }
 #at-toast { position: fixed; top: 18px; left: 50%; transform: translate(-50%, -20px); opacity: 0; transition: .2s; background: #2c2621; color: #e8dcc4;
   border: 1px solid #cf4a32; padding: 8px 16px; border-radius: 6px; font-family: "Spectral", serif; pointer-events: none; }
 #at-toast.is-on { opacity: 1; transform: translate(-50%, 0); }
@@ -1288,6 +1294,149 @@ body {
 }
 
 /* ==========================================================================
+   Give dialog
+   ========================================================================== */
+
+.application.attune-give { min-width: 360px; min-height: 0; }
+
+.attune .at-root.at-give {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  height: auto;
+  padding: var(--sp-3) var(--sp-3) var(--sp-2);
+}
+
+.attune .at-give-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.attune .at-root .at-tile-lg {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+.attune .at-give-item .at-row-name {
+  font-family: var(--at-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.attune .at-give-item .at-row-meta { font-size: 12.5px; font-style: italic; color: var(--at-ink-dim); }
+
+.attune .at-root ul.at-give-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 178, 90, 0.3) transparent;
+}
+
+/* Recipient: Triad's identity card. */
+.attune .at-root .at-give-target {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 12px;
+  min-height: 52px;
+  padding: var(--sp-1) 12px var(--sp-1) var(--sp-1);
+  border-radius: 12px;
+  background: var(--at-fill);
+  box-shadow: inset 0 0 0 1px var(--at-hair);
+  text-align: left;
+  line-height: 1.2;
+  transition: background-color 0.15s ease, box-shadow 0.2s ease;
+}
+
+.attune .at-root .at-give-target:hover {
+  background: var(--at-fill-2);
+  box-shadow: inset 0 0 0 1px var(--at-gold-line);
+}
+
+.attune .at-root .at-give-target.is-selected {
+  background: var(--at-gold-soft);
+  box-shadow: inset 0 0 0 1px var(--at-gold-line), 0 0 14px rgba(212, 178, 90, 0.16);
+}
+
+.attune .at-give-target img {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  object-fit: cover;
+  object-position: top center;
+  box-shadow: 0 0 0 1px var(--at-hair-2);
+}
+
+.attune .at-give-target.is-selected img { box-shadow: 0 0 0 1px var(--at-gold-line); }
+.attune .at-give-target.is-selected .at-row-name { color: var(--at-gold-light); }
+.attune .at-give-target .at-row-meta i { font-size: 9px; color: var(--at-moss-light); }
+
+.attune .at-give-check {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--at-hair-2);
+  color: transparent;
+  font-size: 10px;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.2s ease;
+}
+
+.attune .at-give-target.is-selected .at-give-check {
+  background: var(--at-gold-fill);
+  box-shadow: 0 0 10px rgba(212, 178, 90, 0.35);
+  color: var(--at-on-gold);
+}
+
+/* Quantity stepper. */
+.attune .at-qty { display: flex; align-items: center; gap: 12px; }
+.attune .at-qty-stepper { gap: 0; }
+.attune .at-root .at-qty-stepper .at-seg { width: 30px; padding: 0; }
+
+.attune .at-qty-input {
+  all: unset;
+  box-sizing: border-box;
+  width: 44px;
+  height: 30px;
+  text-align: center;
+  font-family: var(--at-body);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--at-ink);
+  font-variant-numeric: tabular-nums lining-nums;
+  -moz-appearance: textfield;
+}
+
+.attune .at-qty-input::-webkit-outer-spin-button,
+.attune .at-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.attune .at-qty-input:focus { color: var(--at-gold-light); }
+.attune .at-qty-of { flex: 1; font-size: 13px; font-style: italic; color: var(--at-ink-faint); }
+
+.attune .at-give-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-1);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--at-hair);
+}
+
+.attune .at-root .at-give-go { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+.attune .at-root .at-give-go:disabled { opacity: 0.4; filter: saturate(0.4); box-shadow: none; }
+
+/* ==========================================================================
    Character sheet inventory badge (outside the window)
    ========================================================================== */
 
@@ -1309,12 +1458,33 @@ body {
 .attune-badge:hover { background: #d4b25a; color: #1c1712; }
 .attune-badge.is-pending { color: #fff; background: #c8553d; box-shadow: 0 0 6px rgba(200, 85, 61, 0.6); }
 
+/* Character sheet inventory: the "give" hand among the row controls. */
+.attune-give-control {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: inherit;
+  opacity: 0.75;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+.attune-give-control:hover { opacity: 1; background: rgba(212, 178, 90, 0.18); color: #b8902f; }
+
 </style>
 </head>
 <body>
 <div class="application attune pv-window">
   <header class="window-header"><i class="window-icon fa-solid fa-gem"></i><span class="title">Attune</span><i class="fa-solid fa-xmark"></i></header>
   <section class="window-content" id="at-content"></section>
+</div>
+<div class="pv-backdrop" id="pv-give-backdrop" hidden>
+  <div class="application attune attune-give pv-give">
+    <header class="window-header"><i class="window-icon fa-solid fa-hand-holding"></i><span class="title">Give Item</span><i class="fa-solid fa-xmark" data-close></i></header>
+    <section class="window-content" id="at-give-content"></section>
+  </div>
 </div>
 <div id="at-toast"></div>
 <p class="pv-note">Preview with illustrative data. Rune levels and descriptions come from your PF2e compendium in Foundry.</p>
@@ -1418,6 +1588,11 @@ body {
               <i class="fa-solid {{#if inCompare}}fa-check{{else}}fa-scale-balanced{{/if}}" inert></i>
               {{#if inCompare}}{{@root.labels.removeCompare}}{{else}}{{@root.labels.addCompare}}{{/if}}
             </button>
+            {{#if canGive}}
+            <button type="button" class="at-chip at-chip-round at-chip-open" data-action="giveItem" data-key="{{key}}" data-tooltip="{{@root.labels.giveAction}}" aria-label="{{@root.labels.giveAction}}">
+              <i class="fa-solid fa-hand-holding" inert></i>
+            </button>
+            {{/if}}
             {{#if canOpen}}
             <button type="button" class="at-chip at-chip-round at-chip-open" data-action="openSheet" data-key="{{key}}" data-tooltip="{{@root.labels.openSheet}}" aria-label="{{@root.labels.openSheet}}">
               <i class="fa-solid fa-up-right-from-square" inert></i>
@@ -1587,6 +1762,63 @@ body {
   </main>
 </div>
 </script>
+<script type="text/x-handlebars-template" id="at-give-template"><div class="at-root at-give">
+  <header class="at-give-item">
+    <span class="at-tile at-tile-lg"><img src="{{item.img}}" alt=""></span>
+    <span class="at-row-text">
+      <span class="at-row-name">{{item.name}}</span>
+      <span class="at-row-meta">{{item.meta}}</span>
+    </span>
+  </header>
+
+  <section class="at-section">
+    <h3 class="at-section-header"><span>{{labels.giveToLabel}}</span></h3>
+    {{#if hasRecipients}}
+    <ul class="at-give-list">
+      {{#each recipients}}
+      <li>
+        <button type="button" class="at-give-target {{#if isSelected}}is-selected{{/if}}" data-action="pick" data-id="{{id}}" aria-pressed="{{#if isSelected}}true{{else}}false{{/if}}">
+          <img src="{{img}}" alt="">
+          <span class="at-row-text">
+            <span class="at-row-name">{{name}}</span>
+            <span class="at-row-meta">{{#if isOwn}}<i class="fa-solid fa-user" inert></i> {{/if}}{{sub}}</span>
+          </span>
+          <span class="at-give-check" aria-hidden="true"><i class="fa-solid fa-check" inert></i></span>
+        </button>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="at-note"><i class="fa-solid fa-user-slash" inert></i> {{labels.giveNobody}}</p>
+    {{/if}}
+  </section>
+
+  {{#if hasQuantity}}
+  <section class="at-section">
+    <h3 class="at-section-header"><span>{{labels.giveQuantity}}</span></h3>
+    <div class="at-qty">
+      <div class="at-pill at-qty-stepper">
+        <button type="button" class="at-seg" data-action="step" data-step="-1" aria-label="−" {{#if atMin}}disabled{{/if}}><i class="fa-solid fa-minus" inert></i></button>
+        <input type="number" class="at-qty-input" value="{{quantity}}" min="1" max="{{max}}" aria-label="{{labels.giveQuantity}}">
+        <button type="button" class="at-seg" data-action="step" data-step="1" aria-label="+" {{#if atMax}}disabled{{/if}}><i class="fa-solid fa-plus" inert></i></button>
+      </div>
+      <span class="at-qty-of">{{labels.giveOf}} {{max}}</span>
+      <button type="button" class="at-chip at-chip-pill {{#if isAll}}is-granted{{else}}is-gold{{/if}}" data-action="all">{{labels.giveAll}}</button>
+    </div>
+  </section>
+  {{/if}}
+
+  {{#if blockedNote}}<p class="at-note is-warn"><i class="fa-solid fa-triangle-exclamation" inert></i> {{blockedNote}}</p>{{/if}}
+  {{#if relayNote}}<p class="at-note"><i class="fa-solid fa-crown" inert></i> {{relayNote}}</p>{{/if}}
+
+  <footer class="at-give-foot">
+    <button type="button" class="at-btn" data-action="cancel">{{labels.giveCancel}}</button>
+    <button type="button" class="at-btn is-on at-give-go" data-action="give" {{#unless canGive}}disabled{{/unless}}{{#if busy}} disabled{{/if}}>
+      {{#if busy}}<i class="fa-solid fa-spinner fa-spin" inert></i>{{else}}<i class="fa-solid fa-hand-holding" inert></i>{{/if}} {{giveLabel}}
+    </button>
+  </footer>
+</div>
+</script>
 <script type="module">
 const LANG = {
   "ATTUNE": {
@@ -1603,6 +1835,10 @@ const LANG = {
       "SheetBadges": {
         "Name": "Inventory badges",
         "Hint": "Show a small icon on character sheet inventory rows for items with runes or activations."
+      },
+      "SheetGive": {
+        "Name": "Give items from the sheet",
+        "Hint": "Show a hand icon on character sheet inventory rows to give the item to another character."
       }
     },
     "UI": {
@@ -1724,7 +1960,28 @@ const LANG = {
       "addedAllNotice": "{n} activation(s) added to {actor}'s actions.",
       "grantError": "Could not update the character sheet. See the console for details.",
       "showParty": "Show party members",
-      "hideParty": "Showing party members"
+      "hideParty": "Showing party members",
+      "giveTitle": "Give Item",
+      "giveAction": "Give to another character",
+      "giveFrom": "From {name}",
+      "giveHave": "{n} owned",
+      "giveToLabel": "Give to",
+      "giveYours": "Your character",
+      "giveNoPlayer": "No player",
+      "giveNobody": "There is no other character to give this to.",
+      "giveQuantity": "Quantity",
+      "giveOf": "of",
+      "giveAll": "All",
+      "giveCancel": "Cancel",
+      "giveChoose": "Choose a character",
+      "giveTo": "Give to {name}",
+      "giveToN": "Give {n} to {name}",
+      "giveViaGM": "This character belongs to another player, so the GM's client makes the hand-off. Nothing to approve.",
+      "giveNoGM": "A GM must be connected to give items to another player's character.",
+      "giveSent": "Giving {item} to {target}…",
+      "giveNotice": "{giver} gave {item} to {target}.",
+      "giveRefused": "{item} could not be given to {target}.",
+      "giveError": "Could not give the item. See the console for details."
     },
     "Badge": {
       "Pending": "{n} activation(s) not on your sheet yet — open in Attune",
@@ -2193,6 +2450,7 @@ function itemView(item, L, catalog, state) {
     addable,
     hasNew: addable > 0,
     canAddAll: addable > 1,
+    canGive: !!item.canEdit,
     summary,
     runeCount: fundamentals.filter((f) => f.present).length + properties.length,
     searchText: [item.name, item.ownerName, summary, ...activations.map((a) => a.trigger)].join(" ").toLowerCase(),
@@ -2377,6 +2635,51 @@ function buildView({ owners, state, L, catalog }) {
   };
 }
 
+/**
+ * Give dialog view model. Pure (no Foundry globals) so the standalone preview uses it too.
+ *
+ * item:       { name, img, quantity, ownerName }
+ * recipients: [{ id, name, img, sub, isOwn }]
+ * state:      { targetId, quantity }
+ */
+
+
+
+function clampQuantity(q, max) {
+  const n = Math.floor(Number(q) || 0);
+  return Math.max(1, Math.min(Math.max(1, Number(max) || 1), n));
+}
+
+function giveView({ item, recipients, state, L, needsGM = () => false, gmOnline = true }) {
+  const max = Math.max(1, Number(item.quantity) || 1);
+  state.quantity = clampQuantity(state.quantity ?? 1, max);
+  if (!recipients.some((r) => r.id === state.targetId)) state.targetId = null;
+  const target = recipients.find((r) => r.id === state.targetId) ?? null;
+  const blocked = needsGM(target) && !gmOnline;
+
+  return {
+    labels: L,
+    item: {
+      ...item,
+      meta: fmt(L.giveFrom, { name: item.ownerName }) + (max > 1 ? ` · ${fmt(L.giveHave, { n: max })}` : "")
+    },
+    recipients: recipients.map((r) => ({ ...r, isSelected: r.id === state.targetId })),
+    hasRecipients: recipients.length > 0,
+    hasQuantity: max > 1,
+    quantity: state.quantity,
+    max,
+    atMin: state.quantity <= 1,
+    atMax: state.quantity >= max,
+    isAll: state.quantity === max,
+    canGive: !!target && !blocked,
+    blockedNote: blocked ? L.giveNoGM : "",
+    relayNote: target && needsGM(target) && !blocked ? L.giveViaGM : "",
+    giveLabel: target
+      ? fmt(state.quantity > 1 ? L.giveToN : L.giveTo, { name: target.name, n: state.quantity })
+      : L.giveChoose
+  };
+}
+
 /** DOM helpers shared by the module and the standalone preview. */
 
 function applySearch(root, query) {
@@ -2456,6 +2759,7 @@ const OWNERS = [
     item({ key: "a1.i4", actorId: "a1", itemId: "i4", ownerName: "Seraphine Vale", name: "Steel Shield", img: IMG.shield, category: "shield", level: 7, price: "302 gp", carry: "equipped",
       runes: { reinforcing: 2 }, base: { acBonus: 2, hardness: 8, maxHp: 64 } }),
     item({ key: "a1.i5", actorId: "a1", itemId: "i5", ownerName: "Seraphine Vale", name: "Cloak of Smoldering Ash", img: IMG.cloak, category: "gear", level: 9, price: "650 gp", carry: "equipped", invested: true, description: DESCRIPTIONS.cloak }),
+    item({ key: "a1.i7", actorId: "a1", itemId: "i7", ownerName: "Seraphine Vale", name: "Feather Token (Ladder)", img: svgIcon("❦", "#4a4a3a", "#1c1c14"), category: "gear", level: 3, price: "3 gp", quantity: 3, description: "" }),
     item({ key: "a1.i6", actorId: "a1", itemId: "i6", ownerName: "Seraphine Vale", name: "Bounding Boots", img: IMG.boots, category: "gear", level: 7, price: "340 gp", carry: "equipped", invested: false, description: DESCRIPTIONS.boots })
   ]},
   { id: "a2", name: "Bram Ashguard", img: IMG.pc2, isOwn: false, isParty: true, items: [
@@ -2509,6 +2813,51 @@ const catalog = {
 
 const L = LANG.ATTUNE.UI;
 const template = Handlebars.compile(document.getElementById("at-template").innerHTML);
+const giveTemplate = Handlebars.compile(document.getElementById("at-give-template").innerHTML);
+const giveBackdrop = document.getElementById("pv-give-backdrop");
+const giveContent = document.getElementById("at-give-content");
+let give = null;
+
+function giveRecipients(fromKey) {
+  const from = findItem(fromKey);
+  return OWNERS.filter((o) => o.id !== from.actorId).map((o) => ({ id: o.id, name: o.name, img: o.img, isOwn: !!o.isOwn, sub: o.isOwn ? L.giveYours : ({ a2: "Marina", a3: "Lucas" }[o.id] ?? L.giveNoPlayer) }));
+}
+function renderGive() {
+  const it = findItem(give.key);
+  giveContent.innerHTML = giveTemplate(giveView({
+    item: { name: it.name, img: it.img, quantity: it.quantity ?? 1, ownerName: it.ownerName },
+    recipients: giveRecipients(give.key), state: give.state, L,
+    needsGM: (r) => !!r && !r.isOwn, gmOnline: true
+  }));
+  const input = giveContent.querySelector(".at-qty-input");
+  input?.addEventListener("change", () => { give.state.quantity = clampQuantity(input.value, it.quantity ?? 1); renderGive(); });
+}
+function openGiveDialog(key) { give = { key, state: { targetId: null, quantity: 1 } }; giveBackdrop.hidden = false; renderGive(); }
+function closeGive() { giveBackdrop.hidden = true; give = null; }
+const giveActions = {
+  pick: (t) => { give.state.targetId = t.dataset.id; },
+  step: (t) => { give.state.quantity += Number(t.dataset.step); },
+  all: () => { give.state.quantity = findItem(give.key).quantity ?? 1; },
+  cancel: () => closeGive(),
+  give: () => {
+    const it = findItem(give.key);
+    const from = OWNERS.find((o) => o.id === it.actorId);
+    const to = OWNERS.find((o) => o.id === give.state.targetId);
+    const qty = give.state.quantity, have = it.quantity ?? 1;
+    const copy = { ...it, key: `${to.id}.g${Date.now()}`, actorId: to.id, ownerName: to.name, carry: "carried", quantity: qty, granted: {}, canEdit: !!to.isOwn };
+    to.items.push(copy);
+    if (qty >= have) from.items.splice(from.items.indexOf(it), 1); else it.quantity = have - qty;
+    toast(fmt(L.giveNotice, { giver: from.name, item: `${qty > 1 ? qty + "× " : ""}${it.name}`, target: to.name }));
+    closeGive();
+  }
+};
+giveBackdrop.addEventListener("click", (ev) => {
+  if (ev.target === giveBackdrop || ev.target.closest("[data-close]")) { closeGive(); return; }
+  const t = ev.target.closest("[data-action]");
+  if (!t || t.disabled || !give) return;
+  giveActions[t.dataset.action]?.(t);
+  if (give) renderGive(); else render();
+});
 const content = document.getElementById("at-content");
 const state = initialState();
 
@@ -2546,6 +2895,7 @@ const actions = {
   setFilter: (t) => { state.filter = t.dataset.filter; },
   toggleDiff: () => { state.diffOnly = !state.diffOnly; },
   openSheet: () => toast("In Foundry this opens the item sheet."),
+  giveItem: (t) => openGiveDialog(t.dataset.key),
   toggleActivation: (t) => {
     const it = findItem(t.dataset.key);
     const i = Number(t.dataset.index);

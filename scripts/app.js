@@ -3,6 +3,7 @@ import { buildView, COMPARE_MAX, fmt, initialState, toggleCompareKey } from "./m
 import { bindSearch } from "./dom.js";
 import { collectOwners, itemActivations } from "./adapter.js";
 import { grantActivation, revokeActivation } from "./grants.js";
+import { openGive } from "./give-app.js";
 import { RuneCatalog } from "./catalog.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -33,6 +34,7 @@ export class AttuneApp extends HandlebarsApplicationMixin(ApplicationV2) {
       toggleActivation: AttuneApp.#onToggleActivation,
       addAll: AttuneApp.#onAddAll,
       toggleParty: AttuneApp.#onToggleParty,
+      giveItem: AttuneApp.#onGiveItem,
       openSheet: AttuneApp.#onOpenSheet
     }
   };
@@ -155,6 +157,11 @@ export class AttuneApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static #onToggleParty() {
     this.state.showParty = !this.state.showParty;
     this.render();
+  }
+
+  static #onGiveItem(event, target) {
+    const found = resolveItem(target.dataset.key);
+    if (found) openGive(found.actor, found.item);
   }
 
   static #onOpenSheet(event, target) {

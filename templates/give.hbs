@@ -1,0 +1,56 @@
+<div class="at-root at-give">
+  <header class="at-give-item">
+    <span class="at-tile at-tile-lg"><img src="{{item.img}}" alt=""></span>
+    <span class="at-row-text">
+      <span class="at-row-name">{{item.name}}</span>
+      <span class="at-row-meta">{{item.meta}}</span>
+    </span>
+  </header>
+
+  <section class="at-section">
+    <h3 class="at-section-header"><span>{{labels.giveToLabel}}</span></h3>
+    {{#if hasRecipients}}
+    <ul class="at-give-list">
+      {{#each recipients}}
+      <li>
+        <button type="button" class="at-give-target {{#if isSelected}}is-selected{{/if}}" data-action="pick" data-id="{{id}}" aria-pressed="{{#if isSelected}}true{{else}}false{{/if}}">
+          <img src="{{img}}" alt="">
+          <span class="at-row-text">
+            <span class="at-row-name">{{name}}</span>
+            <span class="at-row-meta">{{#if isOwn}}<i class="fa-solid fa-user" inert></i> {{/if}}{{sub}}</span>
+          </span>
+          <span class="at-give-check" aria-hidden="true"><i class="fa-solid fa-check" inert></i></span>
+        </button>
+      </li>
+      {{/each}}
+    </ul>
+    {{else}}
+    <p class="at-note"><i class="fa-solid fa-user-slash" inert></i> {{labels.giveNobody}}</p>
+    {{/if}}
+  </section>
+
+  {{#if hasQuantity}}
+  <section class="at-section">
+    <h3 class="at-section-header"><span>{{labels.giveQuantity}}</span></h3>
+    <div class="at-qty">
+      <div class="at-pill at-qty-stepper">
+        <button type="button" class="at-seg" data-action="step" data-step="-1" aria-label="−" {{#if atMin}}disabled{{/if}}><i class="fa-solid fa-minus" inert></i></button>
+        <input type="number" class="at-qty-input" value="{{quantity}}" min="1" max="{{max}}" aria-label="{{labels.giveQuantity}}">
+        <button type="button" class="at-seg" data-action="step" data-step="1" aria-label="+" {{#if atMax}}disabled{{/if}}><i class="fa-solid fa-plus" inert></i></button>
+      </div>
+      <span class="at-qty-of">{{labels.giveOf}} {{max}}</span>
+      <button type="button" class="at-chip at-chip-pill {{#if isAll}}is-granted{{else}}is-gold{{/if}}" data-action="all">{{labels.giveAll}}</button>
+    </div>
+  </section>
+  {{/if}}
+
+  {{#if blockedNote}}<p class="at-note is-warn"><i class="fa-solid fa-triangle-exclamation" inert></i> {{blockedNote}}</p>{{/if}}
+  {{#if relayNote}}<p class="at-note"><i class="fa-solid fa-crown" inert></i> {{relayNote}}</p>{{/if}}
+
+  <footer class="at-give-foot">
+    <button type="button" class="at-btn" data-action="cancel">{{labels.giveCancel}}</button>
+    <button type="button" class="at-btn is-on at-give-go" data-action="give" {{#unless canGive}}disabled{{/unless}}{{#if busy}} disabled{{/if}}>
+      {{#if busy}}<i class="fa-solid fa-spinner fa-spin" inert></i>{{else}}<i class="fa-solid fa-hand-holding" inert></i>{{/if}} {{giveLabel}}
+    </button>
+  </footer>
+</div>
